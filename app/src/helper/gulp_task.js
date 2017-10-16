@@ -1,4 +1,11 @@
-//创建并启动服务器
+/**
+ * [createServerTask 创建并启动服务器]
+ * @param  {[type]} name  [任务名称]
+ * @param  {[type]} path  [服务器根目录]
+ * @param  {[type]} files [监听的文件]
+ * @param  {[type]} port  [端口]
+ * @return {[type]}       [description]
+ */
 const createServerTask = function(name, path, files, port) {
 	files = files ? files: ['**'];
 
@@ -112,6 +119,8 @@ const createHash = function(name, path, outPath) {
 `
       };
 
+//--------------------一键生成功能-------------------
+
 //拷贝文件夹及文件夹内容
 const copy = function(name, path, outPath) {
 	return `gulp.task('${name}',() => {
@@ -121,6 +130,33 @@ return gulp.src('${path}/**/*')
 	`
 };
 
+/**
+ * [startAutoServer auto创建并启动服务器]
+ * @param  {[type]} name  [任务名称]
+ * @param  {[type]} path  [服务器根目录]
+ * @param  {[type]} files [监听的文件]
+ * @param  {[type]} port  [端口]
+ * @param  {[type]} startPath  [默认打开目录]
+ * @return {[type]}       [description]
+ */
+const startAutoServer = function(name, path, files, port, startPath) {
+  files = files ? files: ['**'];
+
+  return `gulp.task('${name}', function() {
+    browserSync.init({
+        files: ${files},
+        server: {
+            baseDir: '${path}',
+            index: 'index.html'
+        },
+        startPath: '${startPath}',
+        port: ${port}
+    });
+});
+
+`
+      };
+
 export {
 	createServerTask,
 	createMiniCss,
@@ -129,5 +165,7 @@ export {
 	createBase64,
 	createSprite,
 	createHash,
-	copy
+
+	copy,
+  startAutoServer
 }

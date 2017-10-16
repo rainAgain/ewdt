@@ -4,14 +4,12 @@
             <Icon class="file-folder" type="folder"></Icon>
         </div>
         <div class="item-file">
-            <p class="title">item.name</p>
-            <p class="path">item.folderPath</p>
+            <p class="title">{{item.name}}</p>
+            <p class="path">{{item.folderPath}}</p>
         </div>
 
         <div class="item-operation">
-            <i-switch class="switch" color="#f00" size="small" @on-change="start(item)"></i-switch>
-            
-            <Icon class="operation-btn" title="刷新" type="ios-refresh-outline" @click.native="refresh(item)"></Icon>
+            <i-switch class="switch" color="#f00" v-model="item.isActive" size="small" @on-change="start(item)"></i-switch>
 
             <Icon class="operation-btn" type="ios-trash-outline" title="删除" @click.native="deleteItem(item)"></Icon>
         </div>
@@ -19,21 +17,75 @@
 </template>
 
 <script>
+	const $path = global.elRequire('path');
+	const $fs = global.elRequire('fs');
+	const $childProcess = global.elRequire('child_process');
+
+	import { startAutoServer } from 'GulpTask';
+	import { mapGetters } from 'vuex';
+	import { consoleLog } from 'mixin';
+	import { formatRootPath } from 'helper';
+
 	export default {
 		name: 'auto-item',
 		data() {
 			return {
-
+				port: '9800'
 			}
 		},
-		props:{
+		computed: {
+	        ...mapGetters([
+	            'rootPath',
+	            'rootPan'
+	        ])
+	    },
+		props: {
 			item:{
 		        type: Object
 		    }
 		},
+		mixins: [consoleLog],
 		methods: {
-			start() {
+			start(item) {
+				if(item.isActive) {
+					//关闭
+					const execClose = `taskkill /pid ${item.execChild.pid} -t -f`;
 
+	                $childProcess.exec(execClose, () => {
+	                	this.$console(`${item.folderPath} liveLoad has closed!`);
+	                });
+	                item.isActive = false;
+				} else {
+					try {
+                      const folderPath = formatRootPath(item.folderPath);  //打开目录地址
+
+                      const projectPath = formatRootPath(item.projectPath);	//项目地址
+
+                      const folderName = `task_${$path.win32.basename(item.folderPath)}`;  //name
+
+                      const files = `['${projectPath}/pages/**']`;
+
+                      const task = startAutoServer(folderName, folderPath, files, this.port, item.defaultStart);
+
+                      this.$console(`Start ${item.folderPath} liveLoad...`);
+
+                      $fs.appendFile(`${this.rootPath}/gulpfile.js`, task,  () => {
+
+                          const taskCmd = `gulp ${folderName}`;
+                          const execStart = `${this.rootPan}: && cd ${this.rootPath} && ${taskCmd}`;
+
+                          item.execChild = $childProcess.exec(execStart, () => {
+                          	this.$console(`Start ${item.folderPath} liveLoad successed!`);
+                          });
+                      });
+
+                      item.isActive = true;
+
+	                } catch(e) {
+	                    console.log(e);
+	                }
+				}
+				
 			},
 			refresh() {
 

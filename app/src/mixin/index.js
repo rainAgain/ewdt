@@ -163,7 +163,7 @@ export const execGulpTask = {
           
           const folderPath = formatRootPath(url);  //打开项目目录地址
 
-          const urlStr = url.split($path.sep).join('_').replace(/:/g,'').toLowerCase();//路径分割名称
+          const urlStr = url.split($path.win32.sep).join('_').replace(/:/g,'').toLowerCase();//路径分割名称
           
           //_${this.$path.win32.basename(url)}
           const folderName = `task_${taskName}_${urlStr}`;//gulp任务唯一名称
