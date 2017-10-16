@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title></title>
+	<link rel="stylesheet" href="./css/test.css">
+</head>
+<body>
+	<h2>首页菜单</h2>
+	<section>
+		<ul>
+			<li class="menu-item l" id="new-window"><a href="javascript:;">打开一个窗口1</a></li>
+			<li class="menu-item l" id="new-window2"><a href="javascript:;">打开一个窗口2</a></li>
+			<li class="menu-item l"><a href="javascript:window.close()">关闭这个窗口</a></li>
+		</ul>
+	</section>
+	<script src="https://unpkg.com/vue@2.4.2/dist/vue.js"></script>
+	<script>
+		//require('../components/menu/menu.js');
+
+		const BrowserWindow = require('electron').remote.BrowserWindow
+		const path = require('path')
+		const url = require('url')
+
+
+
+
+		const newWindowBtn = document.getElementById('new-window')
+
+		newWindowBtn.addEventListener('click', function (event) {
+			console.log(1111);
+		  //const modalPath = path.join('file://', __dirname, '../index.html')
+		  let win = new BrowserWindow({ width: 800, height: 620 })
+		  win.on('close', function () { win = null })
+		  //win.loadURL(modalPath)
+		  win.loadURL('http://localhost:5010')
+			//win.loadURL(`file://${__dirname}/client/build/index.html`)
+				
+		  win.show()
+		})
+
+		const newWindowBtn2 = document.getElementById('new-window2')
+
+		newWindowBtn2.addEventListener('click', function (event) {
+		  //const modalPath = path.join('file://', __dirname, '../index.html')
+		  let win = new BrowserWindow({ width: 400, height: 320 })
+		  win.on('close', function () { win = null })
+		  //win.loadURL(modalPath)
+		  win.loadURL('https://www.baidu.com/')
+
+		  win.show()
+		})
+	</script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+/*!
+ * 文件上传
+ * author: xiaolong;
+ */
+
+.webuploader-container {
+	position: relative;
+}
+
+.webuploader-element-invisible {
+	position: absolute !important;
+	clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
+	clip: rect(1px,1px,1px,1px);
+}
+
+.toolbar {
+	padding: 10px;
+}
+
+/* 按钮样式 */
+.btn-upload {
+	display: inline-block;
+	width: 124px;
+	height: 36px;
+	margin-right: 20px;
+	border: 1px solid #72beff;
+	line-height: 36px;
+	text-align: center;
+	color: #1492ff;
+	font-size: 16px;
+	border-radius: 2px;
+	text-decoration: none;
+}
+
+.btn-upload:hover{
+	background-color: #1492ff;
+	color: #fff;
+	border-color: #1492ff;
+}
+
+.file-list {
+	padding-top: 30px;
+}
+
+.main {
+	width: 990px;
+	margin: 0 auto;
+	min-height: 600px;
+}
+
+
+/* 文件列表样式 */
+.cs-uploader-item {
+	position: relative;
+	width: 458px;
+	height: 72px;
+	margin-bottom: 20px;
+	box-sizing: border-box;
+	padding: 13px 15px 0;
+	border: 1px solid #dfdfdf;
+}
+
+.cs-uploader-img {
+	float: left;
+	width: 76px;
+	height: 48px;
+	border-radius: 2px;
+	margin-right: 20px;
+}
+
+.cs-uploader-img img {
+	width: 100%;
+	height: 100%;
+	border-radius: 2px;
+}
+
+.cs-uploader-context {
+	line-height: 20px;
+	font-size: 14px;
+}
+
+.cs-uploader-up {
+	padding-bottom: 8px;
+}
+
+.cs-uploader-btm {
+	color: #999;
+}
+
+.cs-uploader-info {
+	display: inline-block;
+	max-width: 253px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	vertical-align: top;
+}
+
+.cs-uploader-error {
+	display: inline-block;
+	vertical-align: top;
+	color: #ff0000;
+}
+
+.cs-uploader-remove {
+	position: absolute;
+	width: 32px;
+	height: 32px;
+	top: 20px;
+	right: -62px;
+	border-radius: 50%;
+	background: url('images/icon-del.png') center center no-repeat #eee;
+}
+
+.cs-uploader-remove:hover {
+	background-image: url('images/icon-del2.png');
+	background-color: #ecf6fe;
+}
+
+.cs-uploader-barwrap {
+	position: absolute;
+	height: 20px;
+	top: 13px;
+	right: 20px;
+	font-size: 0;
+	background-color: #fff;
+}
+
+.cs-uploader-progressbar {
+	display: inline-block;
+	vertical-align: middle;
+	width: 150px;
+	height: 8px;
+	background-color: #e5e5e5;
+	border-radius: 4px;
+	line-height: 15px;
+}
+
+.progress-body {
+	display: inline-block;
+	border-radius: 4px;
+	height: 8px;
+	vertical-align: top;
+	background-color: #53aaf5;
+}
+
+.progress-text {
+	display: inline-block;
+	vertical-align: middle;
+	font-size: 14px;
+	line-height: 20px;
+	margin-left: 12px;
+}

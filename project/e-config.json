@@ -1,0 +1,25 @@
+{	
+	"name": "myproject",
+	"output": "dist",
+
+	"supportAutoprefixer": true,
+	"autoprefixer": "ie8",
+
+	"supportSpriteCss": true,
+
+	"supportImageTobase64": true,
+	"base64Size": 8,
+
+	"supportUglifyJs": true,
+	"supportCleanCss": true,
+	"supportPngCompressor": true,
+
+	"useHash": true,
+
+	"liveReload": {
+		"available": true,
+		
+		"port": 9090,
+		"startPath": ""
+	}
+}
