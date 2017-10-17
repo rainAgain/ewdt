@@ -8,6 +8,8 @@ const url = require('url');
 const ipc = require('electron').ipcMain;
 const dialog = require('electron').dialog;
 
+let installExtension = require('electron-devtools-installer')
+
 //单个打包系统对话框
 // ipc.on('open-file-dialog', function(event) {
 
@@ -35,9 +37,9 @@ const dialog = require('electron').dialog;
 let mainWindow;
 
 function createWindow() {
-    // installExtension(VUEJS_DEVTOOLS)
-    //   .then((name) => console.log(`Added Extension:  ${name}`))
-    //   .catch((err) => console.log('An error occurred: ', err));
+    installExtension.default(installExtension.VUEJS_DEVTOOLS)
+      .then((name) => console.log(`Added Extension:  ${name}`))
+      .catch((err) => console.log('An error occurred: ', err));
     // Create the browser window.
     
     mainWindow = new BrowserWindow({ width: 400, height: 600, minWidth: 400, minHeight: 600 });

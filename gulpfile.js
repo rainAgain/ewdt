@@ -10,91 +10,12 @@ const sprite = require('rain-css-img-sprite');
 
 const pump = require('pump');
 
-gulp.task('task_copy_f_electrontest_project',() => {
-return gulp.src('G://Electron/electronAppZoom/project/prototype/**/*')
-    .pipe(gulp.dest('F://electronTest/project'));
-});
-	gulp.task('task_electronTest', function() {
-    browserSync.init({
-        files: ['F://electronTest/project/pages/**'],
-        server: {
-            baseDir: 'F://electronTest',
-            index: 'index.html'
-        },
-        startPath: '/project/pages/default/index.html',
-        port: 9800
-    });
-});
-
-gulp.task('task_electronTest', function() {
-    browserSync.init({
-        files: ['F://electronTest/project/pages/**'],
-        server: {
-            baseDir: 'F://electronTest',
-            index: 'index.html'
-        },
-        startPath: '/project/pages/default/index.html',
-        port: 9800
-    });
-});
-
-gulp.task('task_electronTest', function() {
-    browserSync.init({
-        files: ['F://electronTest/project/pages/**'],
-        server: {
-            baseDir: 'F://electronTest',
-            index: 'index.html'
-        },
-        startPath: '/project/pages/default/index.html',
-        port: 9800
-    });
-});
-
-gulp.task('task_electronTest', function() {
-    browserSync.init({
-        files: ['F://electronTest/project/pages/**'],
-        server: {
-            baseDir: 'F://electronTest',
-            index: 'index.html'
-        },
-        startPath: '/project/pages/default/index.html',
-        port: 9800
-    });
-});
-
-gulp.task('task_electronTest', function() {
-    browserSync.init({
-        files: ['F://electronTest/project/pages/**'],
-        server: {
-            baseDir: 'F://electronTest',
-            index: 'index.html'
-        },
-        startPath: '/project/pages/default/index.html',
-        port: 9800
-    });
-});
-
-gulp.task('task_electronTest', function() {
-    browserSync.init({
-        files: ['F://electronTest/project/pages/**'],
-        server: {
-            baseDir: 'F://electronTest',
-            index: 'index.html'
-        },
-        startPath: '/project/pages/default/index.html',
-        port: 9800
-    });
-});
-
-gulp.task('task_electronTest', function() {
-    browserSync.init({
-        files: ['F://electronTest/project/pages/**'],
-        server: {
-            baseDir: 'F://electronTest',
-            index: 'index.html'
-        },
-        startPath: '/project/pages/default/index.html',
-        port: 9800
-    });
+gulp.task('task_minify_css_f_electrontest_dddd',(cb) => {
+    pump([
+        gulp.src('F://electronTest/dddd/**/*.css'),
+        autoprefixer(),
+        cleanCSS(),
+        gulp.dest('F://electronTest/dddd/miniDist')
+    ],cb)
 });
 

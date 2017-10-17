@@ -4,14 +4,16 @@
 		<Button type="ghost" @click="addFolder">
 			<Icon type="plus-round"></Icon> 选择创建地址
 		</Button>
-		<Button type="ghost" disabled>
+		<Button type="ghost" @click="release">
 			<Icon title="配置" type="gear-b"></Icon>发布
 		</Button>
-		
+		<Button type="ghost" @click="clearAll">
+			删除全部
+		</Button>
 		<!-- 项目列表 -->
 		<ul>
-			<li v-for="(item,index) in projectList" :key="index" >
-				<div class="auto-item">
+			<li v-for="(item,index) in projectList" :key="index"  @click="select(item,index)">
+				<div class="auto-item" :class="{active : index == selected}">
 					<div class="item-folder">
 			            <Icon class="file-folder" type="folder"></Icon>
 			        </div>
@@ -19,10 +21,11 @@
 			            <p class="title">{{item.name}}</p>
 			            <p class="path">{{item.folderPath}}</p>
 			        </div>
-
 			        <div class="item-operation">
-			            <i-switch class="switch" color="#f00" v-model="item.isActive" size="small" @on-change="startLiveLoad(item)"></i-switch>
-
+						<div class="checkbox switch-item switch" @click="startLiveLoad(item, index)"> 
+							<input type="checkbox" v-model="item.isActive" />
+							<label></label>
+						</div>
 			            <Icon class="operation-btn" type="ios-trash-outline" title="删除" @click.native="deleteItem(item)"></Icon>
 			        </div>
 				</div>
@@ -147,10 +150,13 @@
 				},	//功能配置
 				isShowLayer: false,	//创建弹窗
 				isShowPublish: false, //发布弹窗
-				projectList: [],
+				projectList: [
+				],
 				defaultStartPath: '/pages/default/index.html',
 				execChild:'',
-				port:'9800'
+				port:'9800',
+				selected: null,
+				choose: null
 			}
 		},
 		components:{
@@ -233,10 +239,9 @@
 						setTimeout(() => {
 							this.isShowLayer = false;
 
-							this.$console('Start liveLoad...')
-							if(this.functions.liveLoad) {
-								this.startLiveLoad(this.projectList[this.projectList.length-1]);
-							}
+							this.selected = this.projectList.length-1;
+							this.choose  = this.projectList[this.projectList.length-1];
+							
 						},200);
 					});
 					
@@ -274,7 +279,9 @@
 				const projectPath = this.folderPath + this.sep + this.config.name;
                 const folderName = $path.win32.basename(projectPath);
 
-                this.projectList.push({
+                
+                
+                this.$set(this.projectList, this.projectList.length, {
                     id: this.projectList.length,
                     name: folderName,
                     folderPath: this.folderPath,
@@ -282,30 +289,40 @@
                     defaultStart: this.defaultStart,
                     isActive: false,
                     isStart: false
-                });
+                })
 
                 localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
+
+                
+				if(this.functions.liveLoad) {
+					this.startLiveLoad(this.projectList[this.projectList.length-1], this.projectList.length-1);
+				}
 			},
 			//启动服务器
-			startLiveLoad(item) {
-				console.log(item);
+			startLiveLoad(item,index) {
+
 				if(item.isActive) {
 					//关闭
 					const execClose = `taskkill /pid ${item.execChild.pid} -t -f`;
 
-	                $childProcess.exec(execClose, () => {
+	                $childProcess.exec(execClose, (error, stdout, stderr) => {
+	                	if (error) {
+	                		console.log('执行报错')
+						    this.$console(`exec error: ${error}`);
+						    return;
+						}
 	                	this.$console(`${item.folderPath} liveLoad has closed!`);
 	                });
 
-	                item.isActive = false;
-					
+	                this.$set(this.projectList[index],'isActive',false);
+
 				} else {
 					try {
                       	const folderPath = formatRootPath(item.folderPath);  //打开目录地址
 
                       	const projectPath = formatRootPath(item.projectPath);
 
-                      	const folderName = `task_${$path.win32.basename(item.folderPath)}`;  //name
+                      	const folderName = `task_${$path.win32.basename(item.folderPath)}`;  
 
                       	const files = `['${projectPath}/pages/**']`;
 	
@@ -321,17 +338,42 @@
 								    this.$console(`exec error: ${error}`);
 								    return;
 								}
+								console.log('执行成功')
                       	    	this.$console('LiveLoad started!');
                       	    });
 
-                      	    item.isActive = true;
-	
+	                		this.$set(this.projectList[index],'isActive',true);
+	                		
+
                       	});
+
+
 
 	                } catch(e) {
 	                    console.log(e);
 	                }
 				}
+
+			//需要更新localstorage的数据
+
+				
+			},
+			select(item, index) {
+	            this.selected = index;
+	            this.choose = item;
+	        },
+	        release() {
+	        	if(this.selected === null) {
+	        		this.$Message.warning('请先选择要发布的项目！');
+	        		return;
+	        	}
+
+	        	
+
+
+	        },
+			clearAll() {
+				localStorage.clear();
 			},
 			//初始化列表数据
           	initData() {
