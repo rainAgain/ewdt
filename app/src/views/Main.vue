@@ -125,6 +125,10 @@ const uglify = require('gulp-uglify');
 const base64 = require('gulp-base64');
 const rainRevAll = require('rain-rev-all');
 const sprite = require('rain-css-img-sprite');
+const rename = require('gulp-rename');
+const rimrafFolder = require('rimraf');
+const rimraf = require('gulp-rimraf');
+const gulpSequence = require('gulp-sequence');
 
 const pump = require('pump');
 

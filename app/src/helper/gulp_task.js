@@ -119,7 +119,7 @@ const createHash = function(name, path, outPath) {
 `
       };
 
-//--------------------一键生成功能-------------------
+//--------------------一键生成功能-------------------------------
 
 //拷贝文件夹及文件夹内容
 const copy = function(name, path, outPath) {
@@ -127,6 +127,7 @@ const copy = function(name, path, outPath) {
 return gulp.src('${path}/**/*')
     .pipe(gulp.dest('${outPath}'));
 });
+
 	`
 };
 
@@ -156,6 +157,22 @@ const startAutoServer = function(name, path, files, port, startPath) {
 
 `
       };
+
+//--------------------一键生成之发布功能-------------------------------
+
+const releaseProject = (name, path, outPath) => {
+  const folderPath = 'F:/electronTest';
+  const dirName = 'dddd';
+  const outDirName = 'dddd-dist';
+  const siteDir = 'pages';
+
+  const outPutDir = folderPath + '/' + outDirName;
+
+  const outPutPagesDir = folderPath + '/' + outDirName + '/' + siteDir;
+
+
+  return ``
+};
 
 export {
 	createServerTask,
