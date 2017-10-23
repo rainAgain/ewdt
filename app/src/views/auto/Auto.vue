@@ -40,7 +40,7 @@
 				<Icon type="close-round" class="close" @click.native="closeLayer"></Icon>
 				<h5>项目名称</h5>
 				<div class="layer-box">
-					<input type="text" v-model="config.name" autofocus class="work-name" placeholder="如：myProject" />
+					<input type="text" v-model.trim="config.name" autofocus class="work-name" placeholder="如：myProject" />
 				</div>
 				<h5>工作区路径</h5>
 				<div class="layer-box">
@@ -78,9 +78,9 @@
 		<transition name="fade" mode="out-in">
 		  	<div class="layer" v-if="isShowRelease">
 				<Icon type="close-round" class="close" @click.native="closeRelease"></Icon>
-				<h5>生成项目名称({{this.choose.name+ this.config.outName}})</h5>
+				<h5>生成项目名称({{this.choose.name + this.config.outName}})</h5>
 				<div class="layer-box">
-					<input type="text" v-model="config.outName" autofocus class="work-name" placeholder="如：-dist(普通) || -v1.0(版本) || -101901(日期)" />
+					<input type="text" v-model.trim="config.outName" autofocus class="work-name" placeholder="如：-dist(默认) || -v1.0(版本) || -101901(日期)" />
 				</div>
 				<h5>功能</h5>
 				<div class="layer-box">
@@ -89,8 +89,8 @@
 							<li><Checkbox label="autoprefixer">开启 autoprefixer 解决方案</Checkbox></li>
 							<li><Checkbox label="sprite">开启 整合压缩雪碧图 解决方案</Checkbox></li>
 							<li><Checkbox label="base64">开启 转换图片为 base64 格式</Checkbox></li>
-						    <li><Checkbox label="minicss">开启 压缩 css 解决方案</Checkbox></li>
-						    <li><Checkbox label="uglifyJs">开启 混淆压缩 JS 解决方案</Checkbox></li>
+						    <li><Checkbox disabled label="minicss">开启 压缩 css 解决方案</Checkbox></li>
+						    <li><Checkbox disabled label="uglifyJs">开启 混淆压缩 JS 解决方案</Checkbox></li>
 						    <!-- <li><Checkbox label="hash">开启 文件版本去缓存解决方案</Checkbox></li> -->
 						    <li></li>
 						</ul>
@@ -144,10 +144,11 @@
 				},
 				percent: 0,	//进度条
 				status: 'active',	//进度条状态
+				releaseStatus: 'active',	//进度条状态
 				functions:{
 					liveLoad: true
 				},
-				releaseFuns:[],	//功能配置
+				releaseFuns:['autoprefixer','sprite','base64','minicss','uglifyJs'],	//功能配置
 				isShowLayer: false,	//创建弹窗
 				isShowRelease: false, //发布弹窗
 				projectList: [
@@ -363,10 +364,23 @@
 	        		this.$Message.warning('请先选择要发布的项目！');
 	        		return;
 	        	}
+
+	        	if( this.releaseInterValTime ) {
+					clearInterval(this.releaseInterValTime);
+				}
+
+	        	this.releasePercent = 0;
+
 	        	this.isShowRelease = true;
 	        },
 	        releaseProject() {
-	        	this.$console('Start release!');
+	        	if(!this.config.outName) {
+	        		this.$Message.warning('请输入生成项目名称!');
+	        		return;
+	        	}
+
+				this.$console('Start release!');
+
 	        	const projectPath = formatRootPath(this.choose.projectPath);
 	        	const folderPath = formatRootPath(this.choose.folderPath);
                 const folderName = `task_release_${$path.win32.basename(this.choose.projectPath)}`;
@@ -382,35 +396,34 @@
 	        	$fs.appendFile(`${this.rootPath}/gulpfile.js`, task,  () => {
 
               	    const taskCmd = `gulp ${folderName}`;
-              	    const execStart = `${this.rootPan}: && cd ${this.rootPath} && ${taskCmd}`;
-
-              	    console.log('single:' + single);
+              	    //const taskCmd = `gulp task_release_we_release_minicss`;
               	    
-              	    const single = $childProcess.execSync(execStart);
+              	    const execStart = `${this.rootPan}: && cd ${this.rootPath} && ${taskCmd}`;
+              	    
+              	    this.$console(execStart);
 
-              	    if(single == 0) {
-              	    	this.$console('single success!');
-              	    }
-            		
+              	    $childProcess.execSync(execStart);
+
+            		this.$console('single success!');
+
               	    const bootPath =`${this.choose.projectPath + this.config.outName + this.sep}js${this.sep}boot${this.sep}boot.min.js`;
 
               	    $fs.writeFile(bootPath, 
-					bootFile({
-						basePath: this.choose.name + this.config.outName,
-						compress: 1
-					}), (err) => {
-				        if(err) {
-				        	this.$console("Write in boot.min.js  falid!");
-				        	this.status = 'wrong';
-				        } else {
-				        	
-				        	this.$console('Release success!');
+						bootFile({
+							basePath: this.choose.name + this.config.outName,
+							compress: 1
+						}), (err) => {
+					        if(err) {
+					        	this.$console("Write in boot.min.js  falid!");
+					        	this.status = 'wrong';
+					        } else {
 
-				        }
-				    });
+					        	this.$console('Release success!');
+					        	this.isShowRelease = false;
+					        }
+					    }
+					);
 
-
-					this.isShowRelease = false;
               	});
 	        },
 	        closeRelease() {

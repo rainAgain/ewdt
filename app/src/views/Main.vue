@@ -128,6 +128,7 @@ const sprite = require('rain-css-img-sprite');
 const rename = require('gulp-rename');
 const rimrafFolder = require('rimraf');
 const rimraf = require('gulp-rimraf');
+const csso = require('gulp-csso');
 const gulpSequence = require('gulp-sequence');
 
 const pump = require('pump');
