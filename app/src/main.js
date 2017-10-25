@@ -5,6 +5,9 @@ var logger = global.elRequire('tracer').console({
 					dateformat : "HH:MM:ss.L"
 				});
 
+require('./config/menu.js');
+
+
 import 'lib-flexible';
 import Vue from 'vue';
 

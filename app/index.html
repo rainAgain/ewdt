@@ -14,7 +14,7 @@
            * path、fs、os、child_process、rc都是node模块所以需要用global.elRequire来引用模块
            * 这边约定所有的eletron和node原生的模块都用global.elRequire来引用（方便区分）
            */
-
+          global = window;
           global.elRequire = require;
           global.rootName = process.cwd();
           global.env = process.cwd()

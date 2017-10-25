@@ -1,17 +1,20 @@
 <template>
 	<div class="auto">
 		<!-- <p class="folder-path"> {{folderPath}}</p> -->
-		<Button type="ghost" @click="addFolder">
-			<Icon type="plus-round"></Icon> 选择创建地址
-		</Button>
-		<Button type="ghost" @click="release">
-			<Icon title="配置" type="gear-b"></Icon>发布
-		</Button>
-		<Button type="ghost" @click="clearAll">
-			删除全部
-		</Button>
+		<div class="btn-box">
+			<Button type="ghost" @click="addFolder">
+				<Icon type="plus-round"></Icon> 选择创建地址
+			</Button>
+			<Button type="ghost" @click="release">
+				<Icon title="配置" type="gear-b"></Icon> 发布
+			</Button>
+			<Button type="ghost" @click="clearAll">
+				<Icon type="ios-trash-outline"></Icon> 删除全部
+			</Button>
+		</div>
+		
 		<!-- 项目列表 -->
-		<ul>
+		<ul class="auto-item-list">
 			<li v-for="(item,index) in projectList" :key="index"  @click="select(item,index)">
 				<div class="auto-item" :class="{active : index == selected}">
 					<div class="item-folder">
@@ -26,7 +29,7 @@
 							<input type="checkbox" v-model="item.isActive" />
 							<label></label>
 						</div>
-			            <Icon class="operation-btn" type="ios-trash-outline" title="删除" @click.native="deleteItem(item)"></Icon>
+			            <Icon class="operation-btn" type="ios-trash-outline" title="删除" @click.native="deleteItem(item,index)"></Icon>
 			        </div>
 				</div>
 			</li>
@@ -77,6 +80,7 @@
 		<!-- 发布配置弹出层 -->
 		<transition name="fade" mode="out-in">
 		  	<div class="layer" v-if="isShowRelease">
+		  		<Progress :percent="relPercent" hide-info :status="relStatus" :stroke-width="2" class="process"></Progress>
 				<Icon type="close-round" class="close" @click.native="closeRelease"></Icon>
 				<h5>生成项目名称({{this.choose.name + this.config.outName}})</h5>
 				<div class="layer-box">
@@ -110,7 +114,22 @@
 				</div>
 			</div>
 		</transition>
-		
+
+		<!-- 确认删除 -->
+		<Modal v-model="modalDelete" width="360">
+	        <p slot="header" style="color:#f60;text-align:center">
+	            <Icon type="information-circled"></Icon>
+	            <span>删除确认</span>
+	        </p>
+	        <div style="text-align:center">
+	            <p>此项目删除后，将不再继续监听文件。</p>
+	            <p>是否继续删除？</p>
+	        </div>
+	        <div slot="footer">
+	            <Button type="info" size="large" @click="modalCancle">取消</Button>
+	            <Button type="error" size="large"  :loading="modal_loading" @click="modalOk">删除</Button>
+	        </div>
+	    </Modal>
 	</div>
 </template>
 
@@ -120,6 +139,9 @@
 	const $path = global.elRequire('path');
 	const $fs = global.elRequire('fs');
 	const $childProcess = global.elRequire('child_process');
+	const $ipcRenderer = $electron.ipcRenderer;
+	const $spawn = $childProcess.spawn;
+	const $mainWindow = $remote.getCurrentWindow();
 
 	import { copy, startAutoServer } from 'GulpTask';
 	import { bootFile } from 'bootTem';
@@ -135,16 +157,20 @@
 		data(){
 			return {
 				sep: $path.win32.sep,
-				interValTime: '',
 				console:'',
 				folderPath: '',		//选择的项目地址
 				config: {
 					name:'',
 					outName:'-dist'
 				},
+				interValTime: null,
 				percent: 0,	//进度条
 				status: 'active',	//进度条状态
-				releaseStatus: 'active',	//进度条状态
+
+				relInterValTime:null,
+				relStatus: 'active',	//进度条状态
+				relPercent: 0,
+
 				functions:{
 					liveLoad: true
 				},
@@ -157,7 +183,13 @@
 				execChild:'',
 				port:'9800',
 				selected: null,
-				choose: null
+				choose: null,
+				modalDelete: false,
+				modal_loading: false,
+				deleteObj: {
+					item:'',
+					index:''
+				}
 			}
 		},
 		components:{
@@ -166,10 +198,11 @@
 		computed:{
 	        ...mapGetters([
 	            'rootPath',
-	            'rootPan'
+	            'rootPan',
+	            'defaultConfig'
 	        ]),
 	        defaultStart() {
-	        	return '/' + this.config.name + this.defaultStartPath;
+	        	return '/' + this.config.name + this.defaultConfig.startPath;
 	        }
 	    },
 	    mixins: [execGulpTask,consoleLog],
@@ -205,7 +238,7 @@
 				//关闭的时候初始化
 				this.folderPath = '';
 				this.config.name = '';
-				this.functions = ['browser'];
+				this.functions.liveLoad = true;
 
 				this.isShowLayer = false;
 			},
@@ -238,7 +271,7 @@
 						//最终创建完成后的回调
 						this.percent = 99;
 						setTimeout(() => {
-							this.isShowLayer = false;
+							this.closeLayer();
 
 							this.selected = this.projectList.length-1;
 							this.choose  = this.projectList[this.projectList.length-1];
@@ -297,26 +330,37 @@
 					this.startLiveLoad(this.projectList[this.projectList.length-1], this.projectList.length-1);
 				}
 			},
+			closeServe(item, index) {
+				const execClose = `taskkill /pid ${item.execChild} -t -f`;
+
+				$childProcess.exec(execClose, (error, stdout, stderr) => {
+				    if (error) {
+					    console.log(error.stack);
+					    console.log('Error code: '+error.code);
+					    return;
+				    }
+
+				    if(index || index == 0 ) {
+				    	this.$Message.info(`${item.name} 已关闭`);
+	                	this.$console(`${item.folderPath} liveLoad has closed!`);
+
+	                	this.$set(this.projectList[index],'isActive',false);
+	                	localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
+	                	console.log('执行了')
+				    }
+				})
+			},
 			//启动服务器
 			startLiveLoad(item,index) {
 
 				if(item.isActive) {
 					//关闭
-					const execClose = `taskkill /pid ${item.execChild.pid} -t -f`;
-
-	                $childProcess.exec(execClose, (error, stdout, stderr) => {
-	                	if (error) {
-	                		console.log('执行报错')
-						    this.$console(`exec error: ${error}`);
-						    return;
-						}
-	                	this.$console(`${item.folderPath} liveLoad has closed!`);
-	                });
-
-	                this.$set(this.projectList[index],'isActive',false);
+					this.closeServe(item, index);
 
 				} else {
+					//启动
 					try {
+						let flag = false;
                       	const folderPath = formatRootPath(item.folderPath);  //打开目录地址
 
                       	const projectPath = formatRootPath(item.projectPath);
@@ -324,60 +368,150 @@
                       	const folderName = `task_${$path.win32.basename(item.projectPath)}`;  
 
                       	const files = `['${projectPath}/pages/**']`;
-	
-                      	const task = startAutoServer(folderName, folderPath, files, this.port, item.defaultStart);
+
+                      	const task = startAutoServer(folderName, folderPath, files, this.defaultConfig.port, item.defaultStart);
 
                       	$fs.appendFile(`${this.rootPath}/gulpfile.js`, task,  () => {
-	
+
                       	    const taskCmd = `gulp ${folderName}`;
                       	    const execStart = `${this.rootPan}: && cd ${this.rootPath} && ${taskCmd}`;
-	
-                      	    item.execChild = $childProcess.exec(execStart, (error, stdout, stderr) => {
-                      	    	if (error) {
-								    this.$console(`exec error: ${error}`);
-								    return;
-								}
-								console.log('执行成功')
-                      	    	this.$console('LiveLoad started!');
+
+                      	    //这是个异步，且在执行的内容没有调用结束时，回调方法不会执行
+                      	    //用execSync同步方法，会阻塞 Node.js 的事件循环，暂停任何额外代码的执行直到衍生的进程退出
+                      	    // const pid = $childProcess.exec(execStart, (error, stdout, stderr) => {
+
+                      	    // }).pid;
+                      	  	
+
+                      	    this.$console(execStart);
+
+                      	    //这种写法，解决spawn不执行的问题
+                      	    const args = [
+	                      	    "/S",
+	                      	    "/C",
+	                      	    '"',
+	                      	    execStart].concat('"');
+
+							const loader = $spawn("cmd.exe", args, {
+								windowsVerbatimArguments: true,
+								detached: false
+							});
+
+                      	    console.log(loader);
+
+                      	    loader.stdout.on('data', (data) => {
+                      	    	if(!flag) {
+                      	    		flag = true;
+	                      	    	console.log('启动了服务器');
+	                      	    	item.execChild = loader.pid;
+		                      	    this.$set(this.projectList[index],'isActive',true);
+
+			                		//需要更新localstorage的数据
+									localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
+
+									this.$console('LiveLoad started!');
+                      	    	}
+                      	    	
                       	    });
 
-	                		this.$set(this.projectList[index],'isActive',true);
-	                		
+                      	    loader.on('exit', (code) => {
+							  console.log(`Child exited with code ${code}`);
+							  //$ipcRenderer.send('get-pid', loader.pid);
+							  //
+							  loader.removeAllListeners('exit')
+							});
 
                       	});
-
-
 
 	                } catch(e) {
 	                    console.log(e);
 	                }
 				}
-
-			//需要更新localstorage的数据
 			},
+			//选中项目
 			select(item, index) {
 	            this.selected = index;
 	            this.choose = item;
 	        },
+	        //删除项目
+	        deleteItem(item, index) {
+
+	        	this.modalDelete = true;
+
+	        	this.deleteObj = {
+	        		item: item,
+	        		index: index
+	        	}
+	        },
+	        //删除点击取消
+	        modalCancle() {
+	        	this.modalDelete = false;
+	        },
+	        //删除点击确认
+	        modalOk() {
+	        	this.modal_loading = true;
+	        	const item = this.deleteObj.item;
+	        	const index = this.deleteObj.index;
+
+    			const projectList = this.projectList.concat();
+
+	        	const deleteItem = () => {
+
+	        		this.$console(`${item.folderPath} liveLoad has removed!`);
+
+	        		projectList.splice(index,1);
+
+		        	localStorage.setItem('auto_project_collection', JSON.stringify(projectList));
+
+		        	this.projectList = projectList;
+
+		        	this.modal_loading = false;
+                	this.modalDelete = false;
+                	this.$Message.success('删除成功');
+	        	}
+
+	        	if(item.isActive) {
+
+	        		const execClose = `taskkill /pid ${item.execChild} -t -f`;
+
+	        		$childProcess.exec(execClose, (error, stdout, stderr) => {
+	                	if (error) {
+	                		console.log('执行报错')
+						    this.$console(`exec error: ${error}`);
+						}
+
+	                	deleteItem();
+                	});
+	        	} else {
+	        		deleteItem();
+	        	}
+                
+	        },
+	        //点击发布
 	        release() {
 	        	if(this.selected === null) {
 	        		this.$Message.warning('请先选择要发布的项目！');
 	        		return;
 	        	}
 
-	        	if( this.releaseInterValTime ) {
-					clearInterval(this.releaseInterValTime);
+	        	if( this.relInterValTime ) {
+					clearInterval(this.relInterValTime);
 				}
 
-	        	this.releasePercent = 0;
+	        	this.relPercent = 0;
+	        	
+	        	this.config.outName = this.defaultConfig.outName;
 
 	        	this.isShowRelease = true;
 	        },
+	        //确认发布
 	        releaseProject() {
 	        	if(!this.config.outName) {
 	        		this.$Message.warning('请输入生成项目名称!');
 	        		return;
 	        	}
+
+	        	this.relPercent = 5;
 
 				this.$console('Start release!');
 
@@ -395,6 +529,8 @@
 
 	        	$fs.appendFile(`${this.rootPath}/gulpfile.js`, task,  () => {
 
+	        		this.relPercent = 15;
+
               	    const taskCmd = `gulp ${folderName}`;
               	    //const taskCmd = `gulp task_release_we_release_minicss`;
               	    
@@ -402,27 +538,45 @@
               	    
               	    this.$console(execStart);
 
-              	    $childProcess.execSync(execStart);
+              	    this.relInterValTime = setInterval(() => {
+						if(this.relPercent < 60)
+						this.relPercent += 1;
+					}, 200);
 
-            		this.$console('single success!');
+              	    $childProcess.exec(execStart, (err) => {
 
-              	    const bootPath =`${this.choose.projectPath + this.config.outName + this.sep}js${this.sep}boot${this.sep}boot.min.js`;
+              	    	if(err) {
+              	    		console.log(err);
+              	    		return;
+              	    	}
+            			
+            			this.relPercent = 80
 
-              	    $fs.writeFile(bootPath, 
-						bootFile({
-							basePath: this.choose.name + this.config.outName,
-							compress: 1
-						}), (err) => {
-					        if(err) {
-					        	this.$console("Write in boot.min.js  falid!");
-					        	this.status = 'wrong';
-					        } else {
+	              	    const bootPath =`${this.choose.projectPath + this.config.outName + this.sep}js${this.sep}boot${this.sep}boot.min.js`;
 
-					        	this.$console('Release success!');
-					        	this.isShowRelease = false;
-					        }
-					    }
-					);
+	              	    $fs.writeFile(bootPath, 
+							bootFile({
+								basePath: this.choose.name + this.config.outName,
+								compress: 1
+							}), (err) => {
+						        if(err) {
+						        	this.$console("Write in boot.min.js  falid!");
+						        	this.status = 'wrong';
+						        } else {
+
+						        	this.relPercent = 99;
+
+						        	setTimeout(() => {
+
+										this.$console('Release success!');
+						        		this.isShowRelease = false;
+									},200);
+						        	
+						        }
+						    }
+						);
+              	    });
+
 
               	});
 	        },
@@ -431,15 +585,40 @@
 	        },
 			clearAll() {
 				localStorage.clear();
+				$mainWindow.reload();
 			},
 			//初始化列表数据
           	initData() {
-              	this.projectList  = localStorage['auto_project_collection'] ? JSON.parse(localStorage['auto_project_collection']) : [];
+          		this.projectList = localStorage['auto_project_collection'] ? JSON.parse(localStorage['auto_project_collection']) : [];
+
+              	// const projectList = localStorage['auto_project_collection'] ? JSON.parse(localStorage['auto_project_collection']) : [];
+              	// projectList.forEach((item) => {
+              	//   	item.isActive = false;
+              	// })
+
+              	// this.projectList = projectList;
           	}
 
 		},
 		mounted() {
+			
 			this.initData();
+
+			$mainWindow.on('close', () => {
+
+				this.projectList.forEach((item) => {
+					if(item.isActive) {
+						this.closeServe(item);
+						item.isActive = false;
+					}
+				})
+
+			  	localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
+
+			  	$mainWindow.removeAllListeners('close');
+			});
+			
+			
 		}
 	}
 </script>

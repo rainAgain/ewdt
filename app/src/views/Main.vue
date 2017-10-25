@@ -1,7 +1,7 @@
 <template lang="html">
     <div class="main">
         <div class="contain">
-            <div class="home-title"><router-link to="home">ewdt</router-link></div>
+            <div class="home-title" @click="linkTo('home')">ewdt</div>
             <transition name="router-fade" mode="out-in">
                 <!-- 待定，是否需要缓存 -->
                 <!-- <keep-alive> -->
@@ -156,6 +156,16 @@ const pump = require('pump');
   mounted() {
       this.initGulpFile();
       this.showConsole();
+
+
+        const initConfig = !!localStorage.d_config && localStorage.d_config != 'undefined' ? JSON.parse(localStorage.d_config) : {
+          port: '9800', //端口
+          startPath: '/pages/default/index.html', //默认启动页
+          outName: '-dist'
+        };
+
+      this.$store.dispatch('saveConfig', initConfig);
+
   },
   watch: {
       "consoleList": function(val) {

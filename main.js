@@ -5,44 +5,39 @@ const BrowserWindow = electron.BrowserWindow;
 const path = require('path');
 const url = require('url');
 
-const ipc = require('electron').ipcMain;
-const dialog = require('electron').dialog;
+const ipc = electron.ipcMain;
+const dialog = electron.dialog;
+const childProcess = require('child_process');
 
-let installExtension = require('electron-devtools-installer')
+//let installExtension = require('electron-devtools-installer');
 
-//单个打包系统对话框
-// ipc.on('open-file-dialog', function(event) {
 
-//     dialog.showOpenDialog({
-//         properties: ['openFile', 'openDirectory']
-//     }, function(files) {
-//         if (files) event.sender.send('selected-directory', files);
-//     });
-// });
+let logo = path.join(__dirname, 'assets/favicon.ico');
 
-//一键生成系统对话框
-// ipc.on('open-file-dialog-auto', function(event) {
-
-//     dialog.showOpenDialog({
-//         filters: [
-//             {name: 'e-config', extensions: ['json']}
-//         ]
-//     }, function(files) {
-//         if (files) event.sender.send('selected-directory-auto', files);
-//     });
-// });
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
+
 let mainWindow;
 
 function createWindow() {
-    installExtension.default(installExtension.VUEJS_DEVTOOLS)
-      .then((name) => console.log(`Added Extension:  ${name}`))
-      .catch((err) => console.log('An error occurred: ', err));
+    
+    // installExtension.default(installExtension.VUEJS_DEVTOOLS)
+    //   .then((name) => console.log(`Added Extension:  ${name}`))
+    //   .catch((err) => console.log('An error occurred: ', err));
     // Create the browser window.
     
-    mainWindow = new BrowserWindow({ width: 400, height: 600, minWidth: 400, minHeight: 600 });
+    mainWindow = new BrowserWindow({
+        width: 400, 
+        height: 600, 
+        minWidth: 400, 
+        minHeight: 600,
+        title: 'EWDT',
+        icon: logo
+        // webPreferences: {
+        //     nodeIntegration: false  //阻止原生的node模块
+        // }
+        });
 
     // and load the index.html of the app.
     // mainWindow.loadURL(url.format({
@@ -51,38 +46,33 @@ function createWindow() {
     //   slashes: true
     // }))
 
-    mainWindow.loadURL('http://localhost:5010');
+    //mainWindow.loadURL('http://localhost:5010');
 
-    // mainWindow.loadURL(url.format({
-    //   pathname: path.join(__dirname, './build/index.html'),
-    //   protocol: 'file:',
-    //   slashes: true
-    // }))
+    mainWindow.loadURL(url.format({
+      pathname: path.join(__dirname, './build/index.html'),
+      protocol: 'file:',
+      slashes: true
+    }))
 
-    //console.log(process.env.NODE_ENV);
     // 加载完毕显示
     mainWindow.webContents.on('did-finish-load', function() {
         mainWindow.show();
     });
 
     // Open the DevTools.
-    //mainWindow.webContents.openDevTools()
+    //mainWindow.webContents.openDevTools();
 
-    // Emitted when the window is closed.
     mainWindow.on('closed', function() {
-        // Dereference the window object, usually you would store windows
-        // in an array if your app supports multi windows, this is the time
-        // when you should delete the corresponding element.
+
+        //mainWindow.removeAllListeners();
         mainWindow = null;
+        console.log('closed');
+
+
     });
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.on('ready', createWindow);
-
-
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function() {
@@ -91,6 +81,8 @@ app.on('window-all-closed', function() {
     if (process.platform !== 'darwin') {
         app.quit();
     }
+    console.log('window-all-closed');
+
 });
 
 app.on('activate', function() {

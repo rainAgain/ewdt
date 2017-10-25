@@ -15,3 +15,10 @@ export const CONSOLE_LOG = (state, data) => {
 export const CLEAN_CONSOLE = (state, data) => {
   	state.consoleList = [];
 };
+
+export const SAVE_CONFIG = (state, data) => {
+	
+	localStorage.d_config = JSON.stringify(data);
+	
+  	state.config = data;
+};

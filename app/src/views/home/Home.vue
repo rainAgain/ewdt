@@ -27,6 +27,7 @@ export default {
       { id: 2, name: '接口调试', icon: '', color: '', link:'auto', flag: false },
       { id: 3, name: '网络抓包', icon: '', color: '', link:'auto', flag: false },
       { id: 4, name: '测试demo', icon: '', color: '', link:'example', flag: false },
+      { id: 5, name: '默认配置', icon: '', color: '', link:'config', flag: false },
     ]
   }),
   methods: {

@@ -41,9 +41,9 @@
     "pump": "^1.0.2",
     "rain-css-img-sprite": "^1.0.0",
     "rain-rev-all": "^1.0.1",
-    "rimraf": "^2.6.2"
-  },
-  "devDependencies": {
+    "rimraf": "^2.6.2",
+    "electron": "~1.6.2",
+    "electron-devtools-installer": "^2.2.0",
     "autoprefixer": "^6.7.7",
     "babel-core": "^6.0.0",
     "babel-loader": "^6.0.0",
@@ -56,8 +56,6 @@
     "cookie-parser": "^1.4.3",
     "cross-env": "^3.0.0",
     "css-loader": "^0.25.0",
-    "electron": "~1.6.2",
-    "electron-devtools-installer": "^2.2.0",
     "electron-packager": "^9.0.1",
     "es6-promise": "^4.1.0",
     "express": "^4.15.3",
@@ -90,5 +88,6 @@
     "vuex": "^2.2.1",
     "webpack": "^2.2.0",
     "webpack-dev-server": "^2.2.0"
-  }
+  },
+  "devDependencies": {}
 }

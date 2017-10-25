@@ -9,3 +9,8 @@ export const consoleLog = ({ commit }, data) => {
 export const cleanConsole = ({ commit }, data) => {
   commit('CLEAN_CONSOLE', data);
 };
+
+//保存配置
+export const saveConfig = ({ commit }, data) => {
+  commit('SAVE_CONFIG', data);
+};

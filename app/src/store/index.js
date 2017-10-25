@@ -13,7 +13,12 @@ const state = {
   count: 0,
   rootPath: '',
   rootPan: '',
-  consoleList: []
+  consoleList: [],
+  config: {
+    port: '9800', //端口
+    startPath: '/pages/default/index.html', //默认启动页
+    outName: '-dist'
+  }
 };
 
 export default new Vuex.Store({
