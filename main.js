@@ -34,6 +34,9 @@ function createWindow() {
         minHeight: 600,
         title: 'EWDT',
         icon: logo
+        // titleBarStyle: 'hiddenInset',
+        // frame: false,
+        // transparent: true,
         // webPreferences: {
         //     nodeIntegration: false  //阻止原生的node模块
         // }

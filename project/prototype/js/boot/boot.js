@@ -2,54 +2,53 @@
  * 全局配置 Config
  */
 (function() {
-
     window.Config = {
-        version: '1.0.6',
+        "version": "1.0.6",
 
         // 直接指向前端工程的根目录
         // 如：http://www.zwfw.com/f9xapp/pages/account/login.html，basePath 则为 '/f9xapp'
-        basePath: '/f9xapp',
+        "basePath": "/f9xapp",
 
-        compress: {
+        "compress": {
             // 是否采用压缩资源
-            enabled: 0,
+            "enabled": 0,
             // 排除的目录或文件
-            exclude: [
-                /js\/libs/,
-                /js\/widgets/
+            "exclude": [
+                "/js\/libs/",
+                "/js\/widgets/"
             ]
         },
 
         // 是否加载 mock.js 和 本地测试数据
-        isLocalMock: 1,
+        "isLocalMock": 1,
 
         // 静态资源时间戳，每次发布时调整一次即可，开发阶段可以禁止浏览器缓存
-        timestamp: '20170822',
+        "timestamp": "20170822",
 
         // 用于公共资源的输出配置，这里用于初始化命名空间，无需修改
-        resExport: { css: {}, js: {} },
+        "resExport": { "css": {}, "js": {} },
 
         // 针对IE的最低兼容性配置，低于该版本，自动载入 浏览器升级 提示
-        browserSupport: { ie: '8' },
+        "browserSupport": { "ie": "8" },
 
         // 分别为测试系统 url 前缀、真实系统 url 前缀
-        mockUrl: '', realUrl: '',
+        "mockUrl": "", "realUrl": "",
 
         // 用于每个页面配置：mock测试地址、真实接口地址
         // 这里用于初始化命名空间，无需修改
-        ajaxUrls: { mock: {}, real: {} },
+        "ajaxUrls": { "mock": {}, "real": {} },
 
         // ajax请求的全局配置
-        ajax: {
+        "ajax": {
             // 请求延时默认6秒
-            timeout: 6000,
+            "timeout": 6000,
 
             // 跨域时，是否把cookie相关信息随请求传给后端，使用条件：IE10+，后端开启跨域
             // 目前主要解决PC端开发过程中，跨域的后端session恢复问题。
-            withCredentials: 1
+            "withCredentials": 1
         }
-    };
-
+    };// configEnd
+    
 }());
 
 /**
@@ -62,6 +61,7 @@
         var ex = Config.compress.exclude;
 
         for(var i = 0, len = ex.length; i < len; i++) {
+            ex[i] = new RegExp(ex[i],"");
             if(ex[i].test(path)) {
                 return false;
             }

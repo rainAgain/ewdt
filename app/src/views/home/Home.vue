@@ -22,12 +22,12 @@ export default {
     home2:'',
     home3:'',
     menuList: [
-      { id: 0, name: '一键生成', icon: 'auto', color: '', link:'auto', flag: false },
-      { id: 1, name: '单个打包', icon: 'serve', color: '', link:'serve', flag: false },
-      { id: 2, name: '接口调试', icon: '', color: '', link:'auto', flag: false },
-      { id: 3, name: '网络抓包', icon: '', color: '', link:'auto', flag: false },
-      { id: 4, name: '测试demo', icon: '', color: '', link:'example', flag: false },
-      { id: 5, name: '默认配置', icon: '', color: '', link:'config', flag: false },
+      { id: 0, name: 'F9x', icon: 'auto', color: '', link:'auto', flag: false },
+      // { id: 1, name: '单个打包', icon: 'serve', color: '', link:'serve', flag: false },
+      // { id: 2, name: '接口调试', icon: '', color: '', link:'auto', flag: false },
+      // { id: 3, name: '网络抓包', icon: '', color: '', link:'auto', flag: false },
+      // { id: 4, name: '测试demo', icon: '', color: '', link:'example', flag: false },
+      { id: 5, name: '默认配置', icon: 'config', color: '', link:'config', flag: false },
     ]
   }),
   methods: {

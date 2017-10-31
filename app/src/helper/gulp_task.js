@@ -56,11 +56,12 @@ const createAutoprefixer = function(name, path, outPath) {
 
 //混淆压缩js
 const createUglify = function(name, path, outPath) {
-	path = `${path}/**/*.js`;
+	const folderPath = `${path}/**/*.js`;
 	return `gulp.task('${name}', (cb) => {
     pump([
-            gulp.src('${path}'),
+            gulp.src('${folderPath}'),
             uglify(),
+            rename({suffix: '.min'}),
             gulp.dest('${outPath}')
         ],
         cb
@@ -131,6 +132,23 @@ return gulp.src('${path}/**/*')
 	`
 };
 
+//混淆压缩boot.js
+const uglifyBootJS = function(name, path, outPath) {
+  const folderPath = `${path}/boot.js`;
+  return `gulp.task('${name}', (cb) => {
+    pump([
+            gulp.src('${folderPath}'),
+            uglify(),
+            rename({suffix: '.min'}),
+            gulp.dest('${outPath}')
+        ],
+        cb
+    );
+});
+
+`
+      };
+
 /**
  * [startAutoServer auto创建并启动服务器]
  * @param  {[type]} name  [任务名称]
@@ -158,21 +176,6 @@ const startAutoServer = function(name, path, files, port, startPath) {
 `
       };
 
-//--------------------一键生成之发布功能-------------------------------
-
-const releaseProject = (name, path, outPath) => {
-  const folderPath = 'F:/electronTest';
-  const dirName = 'dddd';
-  const outDirName = 'dddd-dist';
-  const siteDir = 'pages';
-
-  const outPutDir = folderPath + '/' + outDirName;
-
-  const outPutPagesDir = folderPath + '/' + outDirName + '/' + siteDir;
-
-
-  return ``
-};
 
 export {
 	createServerTask,
@@ -184,5 +187,6 @@ export {
 	createHash,
 
 	copy,
+  uglifyBootJS,
   startAutoServer
 }

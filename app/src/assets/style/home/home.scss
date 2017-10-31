@@ -38,11 +38,17 @@
         }
         &.auto {
           background-image: url('../../imgages/auto.png');
+          background-size: 50% 50%;
           background-color: #f60;
         }
         &.serve {
           background-image: url('../../imgages/steps.png');
           background-color: #ffc500;
+        }
+        &.config {
+          background-image: url('../../imgages/config.png');
+          background-size: 50% 50%;
+          background-color: #333;
         }
       }
       p {

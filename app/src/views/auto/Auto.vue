@@ -2,15 +2,26 @@
 	<div class="auto">
 		<!-- <p class="folder-path"> {{folderPath}}</p> -->
 		<div class="btn-box">
-			<Button type="ghost" @click="addFolder">
-				<Icon type="plus-round"></Icon> 选择创建地址
-			</Button>
-			<Button type="ghost" @click="release">
-				<Icon title="配置" type="gear-b"></Icon> 发布
-			</Button>
-			<Button type="ghost" @click="clearAll">
-				<Icon type="ios-trash-outline"></Icon> 删除全部
-			</Button>
+			<Row>
+		        <Col span="8" class="btns-col">
+			        <Button type="ghost" class="btns" @click="addFolder">
+						<Icon type="plus-round"></Icon> 选择目录
+					</Button>
+				</Col>
+		        <Col span="8" class="btns-col">
+		        	<Button type="ghost" class="btns" @click="release">
+						<Icon title="配置" type="gear-b"></Icon> 发布
+					</Button>
+		        </Col>
+		        <Col span="8" class="btns-col">
+		        	<Button type="ghost" class="btns" @click="clearAll">
+						<Icon type="ios-trash-outline"></Icon> 删除全部
+					</Button>
+		        </Col>
+		    </Row>
+			
+			
+			
 		</div>
 		
 		<!-- 项目列表 -->
@@ -143,7 +154,7 @@
 	const $spawn = $childProcess.spawn;
 	const $mainWindow = $remote.getCurrentWindow();
 
-	import { copy, startAutoServer } from 'GulpTask';
+	import { uglifyBootJS, copy, startAutoServer } from 'GulpTask';
 	import { bootFile } from 'bootTem';
 	import { mapGetters } from 'vuex';
 	import { execGulpTask, consoleLog } from 'mixin';
@@ -174,7 +185,7 @@
 				functions:{
 					liveLoad: true
 				},
-				releaseFuns:['autoprefixer','sprite','base64','minicss','uglifyJs'],	//功能配置
+				releaseFuns:['autoprefixer','minicss','uglifyJs'],	//功能配置
 				isShowLayer: false,	//创建弹窗
 				isShowRelease: false, //发布弹窗
 				projectList: [
@@ -284,29 +295,49 @@
 			//更新boot.min.js的配置
 			modifyFile(callback) {
 				//boot.min.js配置文件的地址
-				const bootPath =`${this.folderPath + this.sep + this.config.name + this.sep}js${this.sep}boot${this.sep}boot.min.js`;
+				//const bootPath =`${this.folderPath + this.sep + this.config.name + this.sep}js${this.sep}boot${this.sep}boot.min.js`;
+				const outputPath =`${this.folderPath + this.sep + this.config.name + this.sep}js${this.sep}boot`;
 
 				this.$console('Start updating… ');
-				this.$console(bootPath);
+				this.$console(outputPath);
 				
 				this.percent = 50;
 
-				$fs.writeFile(bootPath, 
-					bootFile({
-						basePath: this.config.name
-					}), (err) => {
-						this.percent = 85;
-				        if(err) {
-				        	this.$console("Write in boot.min.js  falid!");
-				        	this.status = 'wrong';
-				        } else {
-				        	if(typeof callback == 'function') {
-				        		callback();
-				        	}
-				        	this.$console('Congratulations on your success!');
+				//一步到位直接修改boot.min.js
+				// $fs.writeFile(bootPath, 
+				// 	bootFile({
+				// 		basePath: this.config.name
+				// 	}), (err) => {
+				// 		this.percent = 85;
+				//         if(err) {
+				//         	this.$console("Write in boot.min.js  falid!");
+				//         	this.status = 'wrong';
+				//         } else {
+				//         	if(typeof callback == 'function') {
+				//         		callback();
+				//         	}
+				//         	this.$console('Congratulations on your success!');
 
-				        }
-				    });
+				//         }
+				//     });
+
+				const bootRootPath = this.rootPath + '/project/prototype/js/boot/boot.js';
+				bootFile({
+					rootPath: bootRootPath,
+					outputPath: outputPath + this.sep + 'boot.js',
+					basePath: this.config.name
+				},() => {
+					this.percent = 85;
+
+					//压缩boot.js 为boot.min,js
+					this.commonHandle( outputPath, 'uglifyBoot', '', uglifyBootJS);
+
+					if(typeof callback == 'function') {
+		        		callback();
+		        	}
+
+		        	this.$console('Congratulations on your success!');
+				})
 			},
 			//存储localstorage
 			storeRecord() {
@@ -418,9 +449,10 @@
 							  console.log(`Child exited with code ${code}`);
 							  //$ipcRenderer.send('get-pid', loader.pid);
 							  //
-							  loader.removeAllListeners('exit')
+							  
 							});
 
+                      	    loader.removeAllListeners()
                       	});
 
 	                } catch(e) {
@@ -552,29 +584,52 @@
             			
             			this.relPercent = 80
 
-	              	    const bootPath =`${this.choose.projectPath + this.config.outName + this.sep}js${this.sep}boot${this.sep}boot.min.js`;
+	              	    //const bootPath =`${this.choose.projectPath + this.config.outName + this.sep}js${this.sep}boot${this.sep}boot.min.js`;
 
-	              	    $fs.writeFile(bootPath, 
-							bootFile({
-								basePath: this.choose.name + this.config.outName,
-								compress: 1
-							}), (err) => {
-						        if(err) {
-						        	this.$console("Write in boot.min.js  falid!");
-						        	this.status = 'wrong';
-						        } else {
+	     //          	    $fs.writeFile(bootPath, 
+						// 	bootFile({
+						// 		basePath: this.choose.name + this.config.outName,
+						// 		compress: 1
+						// 	}), (err) => {
+						//         if(err) {
+						//         	this.$console("Write in boot.min.js  falid!");
+						//         	this.status = 'wrong';
+						//         } else {
 
-						        	this.relPercent = 99;
+						//         	this.relPercent = 99;
 
-						        	setTimeout(() => {
+						//         	setTimeout(() => {
 
-										this.$console('Release success!');
-						        		this.isShowRelease = false;
-									},200);
+						// 				this.$console('Release success!');
+						//         		this.isShowRelease = false;
+						// 			},200);
 						        	
-						        }
-						    }
-						);
+						//         }
+						//     }
+						// );
+						const bootRootPath = this.rootPath + '/project/prototype/js/boot/boot.js';
+						
+						//const bootPath =`${this.choose.projectPath + this.config.outName + this.sep}js${this.sep}boot${this.sep}boot.min.js`;
+
+						const outputPath = `${this.choose.projectPath + this.config.outName + this.sep}js${this.sep}boot`;
+						bootFile({
+							rootPath: bootRootPath,
+							outputPath: outputPath + this.sep + 'boot.js',
+							basePath: this.choose.name + this.config.outName,
+							compress: 1
+						},() => {
+							this.relPercent = 99;
+							
+							//压缩boot.js 为boot.min,js
+							this.commonHandle( outputPath, 'uglifyBootoRelease', '', uglifyBootJS);
+
+							setTimeout(() => {
+								this.$console('Release success!');
+				        		this.isShowRelease = false;
+							},200);
+
+						});
+
               	    });
 
 
