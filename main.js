@@ -49,13 +49,13 @@ function createWindow() {
     //   slashes: true
     // }))
 
-    //mainWindow.loadURL('http://localhost:5010');
+    mainWindow.loadURL('http://localhost:5010');
 
-    mainWindow.loadURL(url.format({
-      pathname: path.join(__dirname, './build/index.html'),
-      protocol: 'file:',
-      slashes: true
-    }))
+    // mainWindow.loadURL(url.format({
+    //   pathname: path.join(__dirname, './build/index.html'),
+    //   protocol: 'file:',
+    //   slashes: true
+    // }))
 
     // 加载完毕显示
     mainWindow.webContents.on('did-finish-load', function() {
