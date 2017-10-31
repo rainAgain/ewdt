@@ -1,6 +1,5 @@
 <template>
 	<div class="auto">
-		<!-- <p class="folder-path"> {{folderPath}}</p> -->
 		<div class="btn-box">
 			<Row>
 		        <Col span="8" class="btns-col">
@@ -42,7 +41,6 @@
 				</div>
 			</li>
 		</ul>
-		<!-- <auto-item :item="item" v-for="(item,index) in projectList" :key="index"></auto-item> -->
 
 		<!-- 创建配置弹出层 -->
 		<transition name="fade" mode="out-in">
@@ -73,17 +71,7 @@
 					    </li>
 					</ul>
 				</div>
-				<!-- <h5>boot 配置</h5>
-				<div class="layer-box">
-					<CheckboxGroup v-model="functions">
-						<ul class="layer-ul">
-						    <li><Checkbox label="compress">是否采用压缩资源</Checkbox></li>
-						    <li><Checkbox label="mock">是否加载 mock.js 和 本地测试数据</Checkbox></li>
-						</ul>
-				    </CheckboxGroup>
-				</div> -->
 				<div class="auto-start">
-						<!-- <div class="start-circle" @click="createProject">创建</div> -->
 						<Button type="success" long @click.native="createProject">确认创建</Button>
 					</div>
 			</div>
@@ -112,15 +100,6 @@
 						</ul>
 				    </CheckboxGroup>
 				</div>
-				<!-- <h5>boot 配置</h5>
-				<div class="layer-box">
-					<CheckboxGroup v-model="functions">
-						<ul class="layer-ul">
-						    <li><Checkbox label="compress">是否采用压缩资源</Checkbox></li>
-						    <li><Checkbox label="mock">是否加载 mock.js 和 本地测试数据</Checkbox></li>
-						</ul>
-				    </CheckboxGroup>
-				</div> -->
 				<div class="auto-start">
 					<Button type="success" long @click.native="releaseProject">确认发布</Button>
 				</div>
@@ -209,9 +188,6 @@
 					index:''
 				}   //删除的对象
 			}
-		},
-		components:{
-			AutoItem
 		},
 		computed:{
 	        ...mapGetters([
