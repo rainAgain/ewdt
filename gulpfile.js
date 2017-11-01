@@ -15,31 +15,71 @@ const gulpSequence = require('gulp-sequence');
 
 const pump = require('pump');
 
-gulp.task('task_copy_f_electrontest_22222',() => {
+gulp.task('task_copy_f_electrontest_qq',() => {
 return gulp.src('G://Electron/electronAppZoom/project/prototype/**/*')
-    .pipe(gulp.dest('F://electronTest/22222'));
+    .pipe(gulp.dest('F://electronTest/qq'));
 });
 
-	gulp.task('task_uglifyBoot_f_electrontest_22222_js_boot', (cb) => {
+	gulp.task('task_uglifyBoot_f_electrontest_qq_js_boot', (cb) => {
     pump([
-            gulp.src('F://electronTest/22222/js/boot/boot.js'),
+            gulp.src('F://electronTest/qq/js/boot/boot.js'),
             uglify(),
             rename({suffix: '.min'}),
-            gulp.dest('F://electronTest/22222/js/boot/')
+            gulp.dest('F://electronTest/qq/js/boot/')
         ],
         cb
     );
 });
 
-gulp.task('task_22222', function() {
+gulp.task('task_autoserve_f_electrontest_qq', function() {
     browserSync.init({
-        files: ['F://electronTest/22222/pages/**'],
+        files: ['F://electronTest/qq/pages/**'],
         server: {
             baseDir: 'F://electronTest',
             index: 'index.html'
         },
-        startPath: '/22222/pages/default/index.html',
-        port: 9000
+        startPath: '/qq/pages/default/index.html',
+        port: 9800
+    });
+});
+
+gulp.task('task_copy_f_electrontest_ww',() => {
+return gulp.src('G://Electron/electronAppZoom/project/prototype/**/*')
+    .pipe(gulp.dest('F://electronTest/ww'));
+});
+
+	gulp.task('task_uglifyBoot_f_electrontest_ww_js_boot', (cb) => {
+    pump([
+            gulp.src('F://electronTest/ww/js/boot/boot.js'),
+            uglify(),
+            rename({suffix: '.min'}),
+            gulp.dest('F://electronTest/ww/js/boot/')
+        ],
+        cb
+    );
+});
+
+gulp.task('task_autoserve_f_electrontest_ww', function() {
+    browserSync.init({
+        files: ['F://electronTest/ww/pages/**'],
+        server: {
+            baseDir: 'F://electronTest',
+            index: 'index.html'
+        },
+        startPath: '/ww/pages/default/index.html',
+        port: 9800
+    });
+});
+
+gulp.task('task_autoserve_f_electrontest_qq', function() {
+    browserSync.init({
+        files: ['F://electronTest/qq/pages/**'],
+        server: {
+            baseDir: 'F://electronTest',
+            index: 'index.html'
+        },
+        startPath: '/qq/pages/default/index.html',
+        port: 9800
     });
 });
 

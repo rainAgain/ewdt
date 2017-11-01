@@ -70,6 +70,7 @@ module.exports = {
             'GulpTask': path.join(__dirname,'./app/src/helper/gulp_task'),
             'GulpAuto': path.join(__dirname,'./app/src/helper/gulp_auto'),
             'bootTem': path.join(__dirname,'./app/src/helper/boot_tem'),
+            'logger': path.join(__dirname,'./app/src/helper/logger'),
 
             'Api' : path.join(__dirname,'./app/src/config/api'),
             'config' : path.join(__dirname,'./app/src/config/config'),

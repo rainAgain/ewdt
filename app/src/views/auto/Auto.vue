@@ -132,14 +132,18 @@
 	const $childProcess = global.elRequire('child_process');
 	const $ipcRenderer = $electron.ipcRenderer;
 	const $spawn = $childProcess.spawn;
-	const $mainWindow = $remote.getCurrentWindow();
+    const $currentWindow = $remote.getCurrentWindow();
+    const $kill = global.elRequire('tree-kill');
+
 
 	import { uglifyBootJS, copy, startAutoServer } from 'GulpTask';
 	import { bootFile } from 'bootTem';
 	import { mapGetters } from 'vuex';
 	import { execGulpTask, consoleLog } from 'mixin';
 	import { formatRootPath } from 'helper';
-	import { autoRelease } from 'GulpAuto';
+    import { autoRelease } from 'GulpAuto';
+    
+    import { logFile } from 'logger';
 
 	import AutoItem from '../../components/auto/AutoItem';
 
@@ -317,11 +321,11 @@
 			//存储localstorage
 			storeRecord() {
 				const projectPath = this.folderPath + this.sep + this.config.name;
-                const folderName = $path.win32.basename(projectPath);
+                const projectName = this.config.name;// $path.win32.basename(projectPath);
 
                 this.$set(this.projectList, this.projectList.length, {
                     id: this.projectList.length,
-                    name: folderName,
+                    name: projectName,
                     folderPath: this.folderPath,
                     projectPath: projectPath,
                     defaultStart: this.defaultStart,
@@ -337,25 +341,33 @@
 				}
             },
             //关闭服务器
-			closeServe(item, index) {
-				const execClose = `taskkill /pid ${item.execChild} -t -f`;
+            /**
+             *@argument item 数据对象
+             *@argument index 第几个
+             *@argument isShow 是否显示提示信息，close方法中设为true，其他不需要传
+             */
+			closeServe(item, index, isShow) {
+                //logFile(`[closeServe] [pid: ${item.execChild}]`);
 
-				$childProcess.exec(execClose, (error, stdout, stderr) => {
-				    if (error) {
-					    console.log(error.stack);
-					    console.log('Error code: '+error.code);
-					    return;
-				    }
+                $kill(item.execChild,'SIGKILL',(err) => {
+                    //logFile(`[$kill] ${err}`);
 
-				    if(index || index == 0 ) {
-				    	this.$Message.info(`${item.name} 已关闭`);
-	                	this.$console(`${item.folderPath} liveLoad has closed!`);
+                    if(index || index == 0 ) {
+                        if(!isShow) {
+                            this.$Message.info(`${item.name} 已关闭`);
+                            this.$console(`${item.folderPath} liveLoad has closed!`);
+                        }
+                        
+                        this.$set(this.projectList[index],'isActive',false);
+                        localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
 
-	                	this.$set(this.projectList[index],'isActive',false);
-	                	localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
-	                	console.log('执行了')
-				    }
-				})
+                        if(index == this.projectList.length && isShow) {
+                            //logFile(`[currentWindow removeClose] 1`);
+                            $currentWindow.close();
+                            $currentWindow.removeAllListeners('close');
+                        }
+                    }
+                });
 			},
 			//启动服务器
 			startLiveLoad(item,index) {
@@ -367,13 +379,14 @@
 					//关闭
 					this.closeServe(item, index);
 				} else {
-
 					//启动
 					try {
 						let flag = false;
                       	const folderPath = formatRootPath(item.folderPath);  //打开目录地址
-                      	const projectPath = formatRootPath(item.projectPath);   //项目完整地址
-                      	const folderName = `task_${$path.win32.basename(item.projectPath)}`;  //任务名称
+                        const projectPath = formatRootPath(item.projectPath);   //项目完整地址
+
+                        const urlStr = item.projectPath.split($path.sep).join('_').replace(/:/g,'').toLowerCase();//路径分割名称
+                      	const folderName = `task_autoserve_${urlStr}`;  //任务名称
                         const files = `['${projectPath}/pages/**']`;    //监听的文件目录
                           
                         //返回启动服务器的任务命令
@@ -396,6 +409,8 @@
 	                      	    execStart].concat('"');
 
 							const loader = $spawn("cmd.exe", args, {
+                                cwd: null, 
+                                env: null,
 								windowsVerbatimArguments: true,
 								detached: false
 							});
@@ -404,7 +419,7 @@
 
                                 //这边返回了多次，所以用一个flag标记一下只执行一次
                       	    	if(!flag) {
-
+                                      
                       	    		flag = true;
                                     item.execChild = loader.pid;
                                     
@@ -419,6 +434,7 @@
                       	    });
 
                       	    loader.on('exit', (code) => {
+                                  logFile(`[loader exit] ${code}`)
 							  //console.log(`Child exited with code ${code}`);
 							});
 
@@ -437,7 +453,7 @@
 	        },
 	        //删除项目
 	        deleteItem(item, index) {
-
+                //logFile('出现了')
 	        	this.modalDelete = true;
 
 	        	this.deleteObj = {
@@ -477,17 +493,10 @@
                 //否则直接删除本地数据
 	        	if(item.isActive) {
 
-	        		const execClose = `taskkill /pid ${item.execChild} -t -f`;
+                    $kill(item.execChild,'SIGKILL',(err) => {
 
-	        		$childProcess.exec(execClose, (error, stdout, stderr) => {
-	                	if (error) {
-	                		console.log('执行报错')
-                            this.$console(`exec error: ${error}`);
-                            //这边执行报错 不返回 return false；为了继续往下执行。增加容错率
-						}
-
-	                	deleteItem();
-                	});
+                       deleteItem();
+                    })
 	        	} else {
 	        		deleteItem();
 	        	}
@@ -522,8 +531,9 @@
 				this.$console('Start release!');
 
 	        	const projectPath = formatRootPath(this.choose.projectPath);
-	        	const folderPath = formatRootPath(this.choose.folderPath);
-                const folderName = `task_release_${$path.win32.basename(this.choose.projectPath)}`;
+                const folderPath = formatRootPath(this.choose.folderPath);
+                const urlStr = this.choose.projectPath.split($path.sep).join('_').replace(/:/g,'').toLowerCase();//路径分割名称
+                const folderName = `task_release_${urlStr}`;
 
 	        	const task = autoRelease({
 	        		folderName: folderName,
@@ -589,16 +599,16 @@
 	        	this.isShowRelease = false;
 	        },
 			clearAll() {
-                this.projectList.forEach((item) => {
+                this.projectList.forEach((item,index) => {
 					if(item.isActive) {
 						item.isActive = false;                        
-						this.closeServe(item);
+						this.closeServe(item, index);
 					}
 				})
 				localStorage.removeItem("auto_project_collection");
 				localStorage.removeItem("auto_collection");
 				localStorage.removeItem("task_collection");
-				$mainWindow.reload();
+				$currentWindow.reload();
 			},
 			//初始化列表数据
           	initData() {
@@ -611,19 +621,25 @@
             this.initData();
             
             //当软件关闭时，结束启动的所有服务器
-			$mainWindow.on('close', () => {
+			$currentWindow.on('close', (event) => {
+                //logFile(`[currentWindow close] 1`);
 
-				this.projectList.forEach((item) => {
+				this.projectList.forEach((item, index) => {
 					if(item.isActive) {
-						item.isActive = false;                        
-						this.closeServe(item);
+                        item.isActive = false;
+                        //logFile(`[currentWindow close forEach] ${item.isActive}`);    
+                        
+                        this.closeServe(item, index, true);
 					}
-				})
+                });
+                //在执行这边方法的时候，closeServe中的kill方法的貌似不会进去，故这边也重置一下
+                //但是，那边的$currentWindow.remove 和close明明是执行了的，不然cmd会报错，这里不太理解
+                //待深入和优化
+                localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
 
-			  	localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
+                //很重要！！！阻止程序的默认事件
+                event.preventDefault();
             });
-
-            $mainWindow.removeAllListeners('close');
 		}
 	}
 </script>
