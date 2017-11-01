@@ -42,13 +42,6 @@ function createWindow() {
         // }
         });
 
-    // and load the index.html of the app.
-    // mainWindow.loadURL(url.format({
-    //   pathname: path.join(__dirname, './test.html'),
-    //   protocol: 'file:',
-    //   slashes: true
-    // }))
-
     //mainWindow.loadURL('http://localhost:5010');
 
     mainWindow.loadURL(url.format({

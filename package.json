@@ -9,7 +9,7 @@
     "mock": "cross-env NODE_ENV=development node src/mock/server.js",
     "server": "cross-env node src/server/server.js",
     "start": "cross-env NODE_ENV=development && electron .",
-    "pack": "rimraf dist && cross-env NODE_ENV=production electron-packager ./ edwt --platform=win32 --arch=x64 --overwrite --out ./dist --version=1.0.0 --ignore=.github --icon=./asset/favicon.ico"
+    "pack": "rimraf dist && cross-env NODE_ENV=production electron-packager ./ ewdt --platform=win32 --arch=x64 --overwrite --out ./dist --version=1.0.0 --ignore=.github --icon=./asset/favicon.ico"
   },
   "electronPackagerConfig": {
     "asar": true

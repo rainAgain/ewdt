@@ -13,8 +13,8 @@
 					</Button>
 		        </Col>
 		        <Col span="8" class="btns-col">
-		        	<Button type="ghost" class="btns" @click="clearAll">
-						<Icon type="ios-trash-outline"></Icon> 删除全部
+		        	<Button type="ghost" class="btns" :loading="isDeleting" @click="clearAll">
+						{{deleteStr}}
 					</Button>
 		        </Col>
 		    </Row>
@@ -179,6 +179,8 @@
 				projectList: [
                 ],  //项目列表
                 
+                isDeleting: false,
+                deleteStr: '删除全部',
 				//defaultStartPath: '/pages/default/index.html',
 				//execChild:'',
 				//port:'9800',
@@ -361,7 +363,7 @@
                         this.$set(this.projectList[index],'isActive',false);
                         localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
 
-                        if(index == this.projectList.length && isShow) {
+                        if(index == (this.projectList.length-1) && isShow) {
                             //logFile(`[currentWindow removeClose] 1`);
                             $currentWindow.close();
                             $currentWindow.removeAllListeners('close');
@@ -599,16 +601,32 @@
 	        	this.isShowRelease = false;
 	        },
 			clearAll() {
-                this.projectList.forEach((item,index) => {
-					if(item.isActive) {
-						item.isActive = false;                        
-						this.closeServe(item, index);
-					}
-				})
-				localStorage.removeItem("auto_project_collection");
-				localStorage.removeItem("auto_collection");
-				localStorage.removeItem("task_collection");
-				$currentWindow.reload();
+                this.isDeleting = true;
+                this.deleteStr = '删除中';
+
+                const clearStorage = () => {
+                    localStorage.removeItem("auto_project_collection");
+                    localStorage.removeItem("auto_collection");
+                    localStorage.removeItem("task_collection");
+                    $currentWindow.reload();
+                };
+
+                if(this.projectList.length) {
+                    this.projectList.forEach((item,index) => {
+                        $kill(item.execChild,'SIGKILL',(err) => {
+
+                            //不管是否启动都执行
+                            if(index == (this.projectList.length-1)) {
+
+                                $currentWindow.removeAllListeners('close');
+                                clearStorage();
+                            }
+                        })
+                    });
+                } else {
+                    clearStorage();
+                }
+                
 			},
 			//初始化列表数据
           	initData() {
@@ -622,22 +640,30 @@
             
             //当软件关闭时，结束启动的所有服务器
 			$currentWindow.on('close', (event) => {
-                //logFile(`[currentWindow close] 1`);
+               
 
-				this.projectList.forEach((item, index) => {
-					if(item.isActive) {
+                //logFile(`[currentWindow close] 1`);
+                if(this.projectList.length) {
+                    
+                    this.projectList.forEach((item, index) => {
+
+                        //不管是否启动都执行
                         item.isActive = false;
+
                         //logFile(`[currentWindow close forEach] ${item.isActive}`);    
-                        
                         this.closeServe(item, index, true);
-					}
-                });
+                    });
+                } else {
+                    $currentWindow.close();
+                    $currentWindow.removeAllListeners('close');
+                }
+				
                 //在执行这边方法的时候，closeServe中的kill方法的貌似不会进去，故这边也重置一下
                 //但是，那边的$currentWindow.remove 和close明明是执行了的，不然cmd会报错，这里不太理解
                 //待深入和优化
                 localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
 
-                //很重要！！！阻止程序的默认事件
+                //很重要！！！阻止程序的默认事件,不能放最前面
                 event.preventDefault();
             });
 		}
