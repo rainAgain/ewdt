@@ -4,6 +4,7 @@ const $fs = global.elRequire('fs');
 
 import { mapActions, mapGetters } from 'vuex';
 import { formatRootPath } from 'helper';
+import { logFile } from 'logger';
 /**
  * [loadMore 上滑加载数据]
  * @type {Object}
@@ -138,6 +139,7 @@ export const execGulpTask = {
           //执行gulp任务的方法
           const execTask = () => {
               const taskCmd = `gulp ${folderName}`
+
               //此处可能需要区分window环境和linux环境，待测试
               const execStart = `${this.rootPan}: && cd ${this.rootPath} && ${taskCmd}`;
 
@@ -183,6 +185,7 @@ export const execGulpTask = {
           //执行gulp任务的方法
           const execTask = () => {
               const taskCmd = `gulp ${folderName}`
+
               //此处可能需要区分window环境和linux环境，待测试
               this.$console(`${this.rootPan}: && cd ${this.rootPath} && ${taskCmd}`);
               const execStart = `${this.rootPan}: && cd ${this.rootPath} && ${taskCmd}`;
@@ -202,13 +205,15 @@ export const execGulpTask = {
                             if(typeof callback == 'function') {
                               callback();
                             }
+                        } else {
+                            logFile(`[spawn error] ${error}`)
                         }
                   })
 
               } catch(e) {
+                logFile(`[exec faild] ${e}`)
               }
           }
-
 
           //如果任务已经存在则直接执行，否则添加并执行
           if(auto_collection.indexOf(UniqueName) > -1) {

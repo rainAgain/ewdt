@@ -91,8 +91,8 @@
 					<CheckboxGroup v-model="releaseFuns">
 						<ul class="layer-ul">
 							<li><Checkbox label="autoprefixer">开启 autoprefixer 解决方案</Checkbox></li>
-							<li><Checkbox label="sprite">开启 整合压缩雪碧图 解决方案</Checkbox></li>
-							<li><Checkbox label="base64">开启 转换图片为 base64 格式</Checkbox></li>
+							<!-- <li><Checkbox label="sprite">开启 整合压缩雪碧图 解决方案</Checkbox></li>
+							<li><Checkbox label="base64">开启 转换图片为 base64 格式</Checkbox></li> -->
 						    <li><Checkbox disabled label="minicss">开启 压缩 css 解决方案</Checkbox></li>
 						    <li><Checkbox disabled label="uglifyJs">开启 混淆压缩 JS 解决方案</Checkbox></li>
 						    <!-- <li><Checkbox label="hash">开启 文件版本去缓存解决方案</Checkbox></li> -->
@@ -126,7 +126,8 @@
 
 <script>
 	const $electron  = global.elRequire('electron');
-	const $remote = $electron.remote;
+    const $remote = $electron.remote;
+    const $dialog = $remote.dialog;
 	const $path = global.elRequire('path');
 	const $fs = global.elRequire('fs');
 	const $childProcess = global.elRequire('child_process');
@@ -173,9 +174,11 @@
                 
                 releaseFuns: ['autoprefixer','minicss','uglifyJs'],	//发布的功能配置
                 
-				isShowLayer: false,	//创建弹窗
+                isShowLayer: false,	//创建弹窗
+                isHasShow: false,   //标记已经点击创建
                 isShowRelease: false, //发布弹窗
-                
+                isHasRelease: false,    //标记
+
 				projectList: [
                 ],  //项目列表
                 
@@ -228,7 +231,8 @@
 			    	try {
 			    		this.$console(path[0]);
 
-				        this.folderPath = path[0];
+                        this.folderPath = path[0];
+                        
 				        //进入这边肯定是有路径的，所以不做判断后才显示
 			        	this.isShowLayer = true;
 		           		this.percent = 0;
@@ -237,20 +241,27 @@
 			    		console.log('没有选择');
 			    		this.$console('no select');
 			    	}
-			    	
 			    });
 			},
 			//关闭弹窗
 			closeLayer() {
+
 				//关闭的时候初始化
 				this.folderPath = '';
 				this.config.name = '';
 				this.functions.liveLoad = true;
-
-				this.isShowLayer = false;
+                this.isHasShow = false;
+                this.isShowLayer = false;
+                
 			},
 			//创建项目
 			createProject() {
+
+                if(this.isHasShow) {
+                    return false;
+                }
+                this.isHasShow = true;
+
 				if(this.config.name === '') {
 
                     this.$console('No project name!');
@@ -349,10 +360,8 @@
              *@argument isShow 是否显示提示信息，close方法中设为true，其他不需要传
              */
 			closeServe(item, index, isShow) {
-                //logFile(`[closeServe] [pid: ${item.execChild}]`);
 
                 $kill(item.execChild,'SIGKILL',(err) => {
-                    //logFile(`[$kill] ${err}`);
 
                     if(index || index == 0 ) {
                         if(!isShow) {
@@ -363,11 +372,11 @@
                         this.$set(this.projectList[index],'isActive',false);
                         localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
 
-                        if(index == (this.projectList.length-1) && isShow) {
-                            //logFile(`[currentWindow removeClose] 1`);
-                            $currentWindow.close();
-                            $currentWindow.removeAllListeners('close');
-                        }
+                        // if(index == (this.projectList.length-1) && isShow) {
+                        //     $currentWindow.close();
+                        //     $currentWindow.removeAllListeners('close');
+                        // }
+                        
                     }
                 });
 			},
@@ -381,6 +390,7 @@
 					//关闭
 					this.closeServe(item, index);
 				} else {
+
 					//启动
 					try {
 						let flag = false;
@@ -402,6 +412,7 @@
                       	    const execStart = `${this.rootPan}: && cd ${this.rootPath} && ${taskCmd}`;
 
                       	    this.$console(execStart);
+                            //logFile(`[wirte in gulpfile] ${execStart}`)
 
                       	    //这种写法，解决spawn不执行的问题
                       	    const args = [
@@ -412,16 +423,21 @@
 
 							const loader = $spawn("cmd.exe", args, {
                                 cwd: null, 
-                                env: null,
+                                env: {
+                                    ELECTRON_NO_ASAR: true,
+                                    ELECTRON_RUN_AS_NODE: true
+                                },
 								windowsVerbatimArguments: true,
 								detached: false
 							});
 
-                      	    loader.stdout.on('data', (data) => {
+                            //logFile(`[spawn exec]`)
 
+                      	    loader.stdout.on('data', (data) => {
+                                 //logFile(`[spawn stdout data] ${data}`)
                                 //这边返回了多次，所以用一个flag标记一下只执行一次
                       	    	if(!flag) {
-                                      
+                                    //logFile(`[create Serve Success]`)
                       	    		flag = true;
                                     item.execChild = loader.pid;
                                     
@@ -429,18 +445,25 @@
 
 			                		//需要更新localstorage的数据
 									localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
+                                    
+                                    //logFile(`[create Serve auto_project_collection] ${JSON.stringify(this.projectList)}`)
 
 									this.$console('LiveLoad started!');
                       	    	}
                       	    	
                       	    });
 
+                            loader.stderr.on('data', (data) => {
+                               // logFile(`[spawn faild] ${data}`)
+                            });
+
                       	    loader.on('exit', (code) => {
-                                  logFile(`[loader exit] ${code}`)
-							  //console.log(`Child exited with code ${code}`);
+                                //logFile(`[loader exit] ${code}`);
+
+                                loader.removeAllListeners()
 							});
 
-                      	    loader.removeAllListeners()
+                      	   
                       	});
 
 	                } catch(e) {
@@ -455,7 +478,6 @@
 	        },
 	        //删除项目
 	        deleteItem(item, index) {
-                //logFile('出现了')
 	        	this.modalDelete = true;
 
 	        	this.deleteObj = {
@@ -498,6 +520,7 @@
                     $kill(item.execChild,'SIGKILL',(err) => {
 
                        deleteItem();
+                       $currentWindow.removeAllListeners('close');
                     })
 	        	} else {
 	        		deleteItem();
@@ -526,7 +549,12 @@
 	        	if(!this.config.outName) {
 	        		this.$Message.warning('请输入生成项目名称!');
 	        		return;
-	        	}
+                }
+                
+                if(this.isHasRelease) {
+                    return false;
+                }
+                this.isHasRelease = true;
 
 	        	this.relPercent = 5;
 
@@ -589,7 +617,7 @@
 
 							setTimeout(() => {
 								this.$console('Release success!');
-				        		this.isShowRelease = false;
+				        		this.closeRelease();
 							},200);
 
 						});
@@ -598,6 +626,7 @@
               	});
 	        },
 	        closeRelease() {
+                this.isHasRelease = false;
 	        	this.isShowRelease = false;
 	        },
 			clearAll() {
@@ -608,7 +637,11 @@
                     localStorage.removeItem("auto_project_collection");
                     localStorage.removeItem("auto_collection");
                     localStorage.removeItem("task_collection");
-                    $currentWindow.reload();
+                    this.projectList = [];
+
+                    this.isDeleting = false;
+                    this.deleteStr = '删除全部';
+                    //$currentWindow.reload();
                 };
 
                 if(this.projectList.length) {
@@ -637,35 +670,73 @@
 		mounted() {
 			
             this.initData();
-            
+
             //当软件关闭时，结束启动的所有服务器
-			$currentWindow.on('close', (event) => {
+			// $currentWindow.on('close', (event) => {
                
 
-                //logFile(`[currentWindow close] 1`);
-                if(this.projectList.length) {
+            //     logFile(`[currentWindow close] ${this.projectList.length}`);
+            //     if(this.projectList.length) {
                     
-                    this.projectList.forEach((item, index) => {
+            //         this.projectList.forEach((item, index) => {
 
-                        //不管是否启动都执行
-                        item.isActive = false;
+            //             //不管是否启动都执行
+            //             item.isActive = false;
 
-                        //logFile(`[currentWindow close forEach] ${item.isActive}`);    
-                        this.closeServe(item, index, true);
-                    });
-                } else {
-                    $currentWindow.close();
-                    $currentWindow.removeAllListeners('close');
-                }
+            //             logFile(`[currentWindow close forEach] ${item.isActive}`);    
+            //             this.closeServe(item, index, true);
+            //         });
+            //     } else {
+            //         $currentWindow.close();
+            //         $currentWindow.removeAllListeners('close');
+            //     }
 				
-                //在执行这边方法的时候，closeServe中的kill方法的貌似不会进去，故这边也重置一下
-                //但是，那边的$currentWindow.remove 和close明明是执行了的，不然cmd会报错，这里不太理解
-                //待深入和优化
-                localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
+            //     //在执行这边方法的时候，closeServe中的kill方法的貌似不会进去，故这边也重置一下
+            //     //但是，那边的$currentWindow.remove 和close明明是执行了的，不然cmd会报错，这里不太理解
+            //     //待深入和优化
+            //     localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
 
-                //很重要！！！阻止程序的默认事件,不能放最前面
-                event.preventDefault();
-            });
+            //     //很重要！！！阻止程序的默认事件,不能放最前面
+            //     event.preventDefault();
+            // });
+
+           
+
+            let closeWindow = false
+
+            window.addEventListener('beforeunload', evt => {
+                if (closeWindow) return
+
+                evt.returnValue = false
+
+                setTimeout(() => {
+                    let result = $dialog.showMessageBox({
+                        message: '是否确认退出应用?',
+                        buttons: ['是', '否']
+                    })
+
+                    if (result == 0) {
+                        closeWindow = true
+
+                        if(this.projectList.length) {
+                    
+                            this.projectList.forEach((item, index) => {
+
+                                //不管是否启动都执行
+                                item.isActive = false;
+                                localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
+                                
+                                this.closeServe(item, index, true);
+                            });
+                        }
+
+                        $currentWindow.close();
+                        $currentWindow.removeAllListeners('close');
+                    }
+                }, 16)
+            })
+
+
 		}
 	}
 </script>

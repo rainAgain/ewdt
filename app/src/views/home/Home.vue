@@ -35,6 +35,7 @@ export default {
           window.close();
       }, 
       jumpLink(item) {
+
           //此处没有用router-link
           //因为后续可能会直接点击跳转到一个新的子进程
           if(!item.flag) {
@@ -56,31 +57,31 @@ export default {
       //初始化gulpfile.js文件
 
   },
-  beforeCreate() {
-    console.log('this is beforeCreate');
-  },
-  created() {
-    console.log('this is created');
-  },
-  beforeMount() {
-      console.log('this is beforeMount');
-  },
-  mounted() {
+//   beforeCreate() {
+//     console.log('this is beforeCreate');
+//   },
+//   created() {
+//     console.log('this is created');
+//   },
+//   beforeMount() {
+//       console.log('this is beforeMount');
+//   },
+//   mounted() {
       
-      console.log('this is mounted');
-  },
-  beforeUpdate() {
-      console.log('this is beforeUpdate');
-  },
-  updated() {
-    console.log('this is updated');
-  },
-  beforeDestory() {
-    console.log('this is beforeDestory');
-  },
-  destoryed() {
-    console.log('this is destoryed');
-  },
+//       console.log('this is mounted');
+//   },
+//   beforeUpdate() {
+//       console.log('this is beforeUpdate');
+//   },
+//   updated() {
+//     console.log('this is updated');
+//   },
+//   beforeDestory() {
+//     console.log('this is beforeDestory');
+//   },
+//   destoryed() {
+//     console.log('this is destoryed');
+//   },
   watch:{
     "msg":function(val){
       console.log('msg is changed');

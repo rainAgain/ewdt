@@ -58,10 +58,12 @@ function createWindow() {
     // Open the DevTools.
     //mainWindow.webContents.openDevTools();
 
-    mainWindow.on('closed', function() {
+    mainWindow.on('closed', function(e) {
 
         //mainWindow.removeAllListeners();
         mainWindow = null;
+        //e.preventDefault();
+        
         console.log('closed');
 
 
@@ -71,14 +73,21 @@ function createWindow() {
 app.on('ready', createWindow);
 
 // Quit when all windows are closed.
-app.on('window-all-closed', function() {
-    // On OS X it is common for applications and their menu bar
-    // to stay active until the user quits explicitly with Cmd + Q
-    if (process.platform !== 'darwin') {
-        app.quit();
-    }
-    console.log('window-all-closed');
+// app.on('window-all-closed', function() {
+//     // On OS X it is common for applications and their menu bar
+//     // to stay active until the user quits explicitly with Cmd + Q
+//     if (process.platform !== 'darwin') {
+//         app.quit();
+//     }
+//     console.log('window-all-closed');
 
+// });
+
+app.on('window-all-closed', app.quit);
+
+app.on('before-quite', () => {
+    mainWindow.removeAllListeners('close');
+    mainWindow.close();
 });
 
 app.on('activate', function() {

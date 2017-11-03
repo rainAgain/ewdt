@@ -40,7 +40,7 @@
     "cookie-parser": "^1.4.3",
     "cross-env": "^3.0.0",
     "css-loader": "^0.25.0",
-    "electron": "~1.6.2",
+    "electron": "^1.6.15",
     "electron-devtools-installer": "^2.2.0",
     "electron-packager": "^9.0.1",
     "es6-promise": "^4.1.0",

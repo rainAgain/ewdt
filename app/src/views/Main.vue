@@ -101,9 +101,11 @@ export default {
           this.home = rootName;
 
           this.home2 = 'env:' + $remote.process.env.npm_package_env;
+
           //package.json中存在env参数，则表示为开发环境
           //生产环境下获取不到package.json所以取不到该参数
           if($remote.process.env.npm_package_env != 'development') {
+              
               //发布环境
               //后面可能需要区分window和linux环境的路径
               rootName = `${rootName}\\resources\\app`;
@@ -115,7 +117,7 @@ export default {
           rootInfo.rootPan = rootInfo.rootPath.split(':')[0];
         
           this.$store.dispatch('getRoot', rootInfo);
-
+//const sprite = require('rain-css-img-sprite');
           const content = `const gulp = require('gulp');
 const browserSync  = require('browser-sync');
 
@@ -124,7 +126,7 @@ const autoprefixer = require('gulp-autoprefixer');
 const uglify = require('gulp-uglify');
 const base64 = require('gulp-base64');
 const rainRevAll = require('rain-rev-all');
-const sprite = require('rain-css-img-sprite');
+
 const rename = require('gulp-rename');
 const rimrafFolder = require('rimraf');
 const rimraf = require('gulp-rimraf');
