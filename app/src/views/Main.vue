@@ -35,6 +35,7 @@ const $path = global.elRequire('path');
 const $fs = global.elRequire('fs');
 const $electron  = global.elRequire('electron');
 const $remote = $electron.remote;
+const isDev = require('electron-is-dev');
 
 import {formatRootPath} from 'helper';
 import { mapGetters } from 'vuex';
@@ -100,6 +101,7 @@ export default {
           let rootName = $path.resolve(); //gulpfile.js所在目录
           this.home = rootName;
 
+        console.log('isDev:' + isDev);
           this.home2 = 'env:' + $remote.process.env.npm_package_env;
 
           //package.json中存在env参数，则表示为开发环境
@@ -117,7 +119,7 @@ export default {
           rootInfo.rootPan = rootInfo.rootPath.split(':')[0];
         
           this.$store.dispatch('getRoot', rootInfo);
-//const sprite = require('rain-css-img-sprite');
+
           const content = `const gulp = require('gulp');
 const browserSync  = require('browser-sync');
 
@@ -126,7 +128,7 @@ const autoprefixer = require('gulp-autoprefixer');
 const uglify = require('gulp-uglify');
 const base64 = require('gulp-base64');
 const rainRevAll = require('rain-rev-all');
-
+const sprite = require('rain-css-img-sprite');
 const rename = require('gulp-rename');
 const rimrafFolder = require('rimraf');
 const rimraf = require('gulp-rimraf');
