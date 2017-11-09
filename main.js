@@ -42,13 +42,20 @@ function createWindow() {
         // }
         });
 
-    mainWindow.loadURL('http://localhost:5010');
+        const isDev = process.env.npm_package_env == 'development';
 
-    // mainWindow.loadURL(url.format({
-    //   pathname: path.join(__dirname, './build/index.html'),
-    //   protocol: 'file:',
-    //   slashes: true
-    // }))
+        if( isDev ) {
+            mainWindow.loadURL('http://localhost:5010');
+        } else {
+            mainWindow.loadURL(url.format({
+                pathname: path.join(__dirname, './build/index.html'),
+                protocol: 'file:',
+                slashes: true
+            }))
+        }
+    
+
+   
 
     // 加载完毕显示
     mainWindow.webContents.on('did-finish-load', function() {

@@ -91,8 +91,9 @@
 					<CheckboxGroup v-model="releaseFuns">
 						<ul class="layer-ul">
 							<li><Checkbox label="autoprefixer">开启 autoprefixer 解决方案</Checkbox></li>
-							<!-- <li><Checkbox label="sprite">开启 整合压缩雪碧图 解决方案</Checkbox></li>
-							<li><Checkbox label="base64">开启 转换图片为 base64 格式</Checkbox></li> -->
+							<li><Checkbox label="sprite">开启 整合雪碧图 解决方案</Checkbox></li>
+							<li><Checkbox label="imagemin">开启 无损压缩图片 解决方案</Checkbox></li>
+							<li><Checkbox label="base64">开启 转换图片为 base64 格式</Checkbox></li>
 						    <li><Checkbox disabled label="minicss">开启 压缩 css 解决方案</Checkbox></li>
 						    <li><Checkbox disabled label="uglifyJs">开启 混淆压缩 JS 解决方案</Checkbox></li>
 						    <!-- <li><Checkbox label="hash">开启 文件版本去缓存解决方案</Checkbox></li> -->
@@ -701,7 +702,6 @@
             // });
 
            
-
             let closeWindow = false
 
             window.addEventListener('beforeunload', evt => {
@@ -735,6 +735,7 @@
                     }
                 }, 16)
             })
+            
 
 
 		}

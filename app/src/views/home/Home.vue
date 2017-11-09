@@ -28,6 +28,7 @@ export default {
       // { id: 3, name: '网络抓包', icon: '', color: '', link:'auto', flag: false },
       // { id: 4, name: '测试demo', icon: '', color: '', link:'example', flag: false },
       { id: 5, name: '默认配置', icon: 'config', color: '', link:'config', flag: false },
+      { id: 6, name: '检查更新', icon: 'update', color: '', link:'update', flag: false },
     ]
   }),
   methods: {
