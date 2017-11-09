@@ -1,6 +1,9 @@
 const $fs = global.elRequire('fs');
 const $path = global.elRequire('path');
 
+import logFile from './logger';
+
+
 const reg = /("([^\\\"]*(\\.)?)*")|('([^\\\']*(\\.)?)*')|(\/{2,}.*?(\r|\n))|(\/\*(\n|.)*?\*\/)/g;// 正则表达式  
 
 //格式化代码函数,已经用原生方式写好了不需要改动,直接引用就好
@@ -103,19 +106,14 @@ export function bootFile(config, callback) {
 
 		$fs.writeFile( outputPath, totalStr, (err) => {
 			if(err) {
-				console.log(err);
+                console.log(err);
+                logFile(`[boot_tem writeFile] ${err}`)
 				return;
 			}
 
 			if(typeof callback == 'function') {
 				callback();
 			}
-
-			console.log('success');
 		});
-
 	});
-
-
-    
 }

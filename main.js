@@ -1,24 +1,26 @@
 const electron = require('electron');
-const app = electron.app;
-const BrowserWindow = electron.BrowserWindow;
-
 const path = require('path');
 const url = require('url');
+const unzip = require('unzip');
+const fs = require('fs');
+const childProcess = require('child_process');
 
+const app = electron.app;
+const BrowserWindow = electron.BrowserWindow;
 const ipc = electron.ipcMain;
 const dialog = electron.dialog;
-const childProcess = require('child_process');
 
 //let installExtension = require('electron-devtools-installer');
 
-
 let logo = path.join(__dirname, 'assets/favicon.ico');
-
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 
 let mainWindow;
+let config = {
+    "downloadUrL": 'http://localhost:9001/protest.zip'    //原型文件下载地址
+};
 
 function createWindow() {
     
@@ -28,7 +30,7 @@ function createWindow() {
     // Create the browser window.
     
     mainWindow = new BrowserWindow({
-        width: 400, 
+        width: 680, 
         height: 600, 
         minWidth: 400, 
         minHeight: 600,
@@ -64,7 +66,61 @@ function createWindow() {
 
     // Open the DevTools.
     //mainWindow.webContents.openDevTools();
+   
 
+    //download
+    var eventTemp = null;
+    ipc.on('download-protype',function(event, arg) {
+
+        if(arg == 'begin') {
+            
+            mainWindow.webContents.downloadURL(config.downloadUrL);
+            eventTemp = event;
+        }
+    });
+    
+    mainWindow.webContents.session.on('will-download', (event, item, webContents) => {
+        //设置文件存放位置
+        const filePath = path.join(__dirname, './project/');
+        //console.log(filePath);
+        item.setSavePath(filePath +item.getFilename());
+        item.on('updated', (event, state) => {
+            if (state === 'interrupted') {
+                console.log('Download is interrupted but can be resumed')
+            } else if (state === 'progressing') {
+                if (item.isPaused()) {
+                    console.log('Download is paused')
+                } else {
+                    console.log(`Received bytes: ${item.getReceivedBytes()}`)
+                }
+            }
+        })
+        item.once('done', (event, state) => {
+            if (state === 'completed') {
+                console.log('Download successfully')
+
+                const unzipStream = unzip.Extract({ path: filePath });
+                    unzipStream.on('finish',() => {
+                        //console.log('finish');
+                    })
+                    unzipStream.on('end',() => {
+                        //console.log('end');
+                    })
+                    unzipStream.on('close',() => {
+                        //console.log('close');
+                        eventTemp.sender.send('download-protype-reply', 'end');
+                        eventTemp = null;
+                    })
+                fs.createReadStream(filePath + '/' + item.getFilename())
+                    .pipe(unzipStream)
+
+            } else {
+                console.log(`Download failed: ${state}`)
+            }
+        })
+    })
+
+    //download end
     mainWindow.on('closed', function(e) {
 
         //mainWindow.removeAllListeners();
@@ -76,6 +132,7 @@ function createWindow() {
 
     });
 }
+
 
 app.on('ready', createWindow);
 

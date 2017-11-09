@@ -2,19 +2,24 @@
 	<div class="auto">
 		<div class="btn-box">
 			<Row>
-		        <Col span="8" class="btns-col">
+		        <Col span="6" class="btns-col">
 			        <Button type="ghost" class="btns" @click="addFolder">
 						<Icon type="plus-round"></Icon> 选择目录
 					</Button>
 				</Col>
-		        <Col span="8" class="btns-col">
+		        <Col span="6" class="btns-col">
 		        	<Button type="ghost" class="btns" @click="release">
 						<Icon title="配置" type="gear-b"></Icon> 发布
 					</Button>
 		        </Col>
-		        <Col span="8" class="btns-col">
+		        <Col span="6" class="btns-col">
 		        	<Button type="ghost" class="btns" :loading="isDeleting" @click="clearAll">
 						{{deleteStr}}
+					</Button>
+		        </Col>
+                <Col span="6" class="btns-col">
+		        	<Button type="ghost" class="btns" :loading="isUpdating"  @click="updateProtype">
+						更新原型
 					</Button>
 		        </Col>
 		    </Row>
@@ -185,6 +190,8 @@
                 
                 isDeleting: false,
                 deleteStr: '删除全部',
+
+                isUpdating: false,//更新进度
 				//defaultStartPath: '/pages/default/index.html',
 				//execChild:'',
 				//port:'9800',
@@ -661,7 +668,14 @@
                     clearStorage();
                 }
                 
-			},
+            },
+            //更新原型
+            updateProtype() {
+                this.isUpdating = true;
+                $ipcRenderer.send('download-protype', 'begin');
+                console.log(111);
+
+            },
 			//初始化列表数据
           	initData() {
           		this.projectList = localStorage['auto_project_collection'] ? JSON.parse(localStorage['auto_project_collection']) : [];
@@ -671,6 +685,15 @@
 		mounted() {
 			
             this.initData();
+
+
+            $ipcRenderer.on('download-protype-reply', (event, arg) => {
+                console.log(222)
+                if(arg == 'end') {
+                    this.isUpdating = false;
+                    this.$Message.info('更新已完成');
+                }
+            });
 
             //当软件关闭时，结束启动的所有服务器
 			// $currentWindow.on('close', (event) => {
@@ -701,44 +724,49 @@
             //     event.preventDefault();
             // });
 
-           
-            let closeWindow = false
-
-            window.addEventListener('beforeunload', evt => {
-                if (closeWindow) return
-
-                evt.returnValue = false
-
-                setTimeout(() => {
-                    let result = $dialog.showMessageBox({
-                        message: '是否确认退出应用?',
-                        buttons: ['是', '否']
-                    })
-
-                    if (result == 0) {
-                        closeWindow = true
-
-                        if(this.projectList.length) {
-                    
-                            this.projectList.forEach((item, index) => {
-
-                                //不管是否启动都执行
-                                item.isActive = false;
-                                localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
-                                
-                                this.closeServe(item, index, true);
-                            });
-                        }
-
-                        $currentWindow.close();
-                        $currentWindow.removeAllListeners('close');
-                    }
-                }, 16)
-            })
             
 
+            // if(!sessionStorage.hasListenBefore) {
+            //     sessionStorage.hasListenBefore = 1;
 
-		}
+                let closeWindow = false
+
+                window.addEventListener('beforeunload', evt => {
+                    if (closeWindow) return
+
+                    evt.returnValue = false
+
+                    setTimeout(() => {
+                        let result = $dialog.showMessageBox({
+                            message: '是否确认退出应用?',
+                            buttons: ['是', '否']
+                        })
+
+                        if (result == 0) {
+                            
+                            closeWindow = true
+                            
+                            if(this.projectList.length) {
+                        
+                                this.projectList.forEach((item, index) => {
+
+                                    //不管是否启动都执行
+                                    item.isActive = false;
+                                    localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
+                                    
+                                    this.closeServe(item, index, true);
+                                });
+                            }
+
+                            $currentWindow.close();
+                            $currentWindow.removeAllListeners('close');
+                        }
+                    }, 16)
+                })
+           // }
+            
+            
+        }
 	}
 </script>
 
