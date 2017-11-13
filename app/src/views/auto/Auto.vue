@@ -210,7 +210,8 @@
 	        ...mapGetters([
 	            'rootPath',
 	            'rootPan',
-	            'defaultConfig'
+                'defaultConfig',
+                'isClose'
 	        ]),
 	        defaultStart() {
 	        	return '/' + this.config.name + this.defaultConfig.startPath;
@@ -676,9 +677,29 @@
                 console.log(111);
 
             },
-			//初始化列表数据
+			//初始化
           	initData() {
-          		this.projectList = localStorage['auto_project_collection'] ? JSON.parse(localStorage['auto_project_collection']) : [];
+                 //列表数据
+                this.projectList = localStorage['auto_project_collection'] ? JSON.parse(localStorage['auto_project_collection']) : [];
+                
+                //ipc监听
+
+                $ipcRenderer.on('download-protype-reply', (event, arg) => {
+                    const args = arg.split('+');
+                    
+                    if(args[0] == 'end') {
+                        //是否有必要添加gulp命令来删除下载的zip文件，
+                        //保留的话感觉也不影响，重新下载的文件会覆盖掉原来的文件
+                        //暂时保留
+                        
+                        this.isUpdating = false;
+                        this.$Message.info('更新已完成');
+                    } else if(args[0] == 'resumed') {
+                        this.isUpdating = false;
+                        this.$Message.warning('更新失败请重试');
+                    }
+                });
+
           	}
 
 		},
@@ -687,13 +708,7 @@
             this.initData();
 
 
-            $ipcRenderer.on('download-protype-reply', (event, arg) => {
-                console.log(222)
-                if(arg == 'end') {
-                    this.isUpdating = false;
-                    this.$Message.info('更新已完成');
-                }
-            });
+            
 
             //当软件关闭时，结束启动的所有服务器
 			// $currentWindow.on('close', (event) => {
@@ -729,43 +744,65 @@
             // if(!sessionStorage.hasListenBefore) {
             //     sessionStorage.hasListenBefore = 1;
 
-                let closeWindow = false
+                // let closeWindow = false
 
-                window.addEventListener('beforeunload', evt => {
-                    if (closeWindow) return
+                // //$ipcRenderer.once('beforeunload',evt => {
+                // window.addEventListener('beforeunload', evt => {
+                //     if (closeWindow) return
 
-                    evt.returnValue = false
+                //     evt.returnValue = false
 
-                    setTimeout(() => {
-                        let result = $dialog.showMessageBox({
-                            message: '是否确认退出应用?',
-                            buttons: ['是', '否']
-                        })
+                //     setTimeout(() => {
+                //         let result = $dialog.showMessageBox({
+                //             message: '是否确认退出应用?',
+                //             buttons: ['是', '否']
+                //         })
 
-                        if (result == 0) {
+                //         if (result == 0) {
                             
-                            closeWindow = true
+                //             closeWindow = true
                             
-                            if(this.projectList.length) {
+                //             if(this.projectList.length) {
                         
-                                this.projectList.forEach((item, index) => {
+                //                 this.projectList.forEach((item, index) => {
 
-                                    //不管是否启动都执行
-                                    item.isActive = false;
-                                    localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
+                //                     //不管是否启动都执行
+                //                     item.isActive = false;
+                //                     localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
                                     
-                                    this.closeServe(item, index, true);
-                                });
-                            }
+                //                     this.closeServe(item, index, true);
+                //                 });
+                //             }
 
-                            $currentWindow.close();
-                            $currentWindow.removeAllListeners('close');
-                        }
-                    }, 16)
-                })
+                //             $currentWindow.close();
+                //             $currentWindow.removeAllListeners('close');
+                //         }
+                //     }, 16)
+                // })
            // }
             
             
+        },
+        watch:{
+            'isClose':function(val) {
+                console.log(val)
+                if(val) {
+                    if(this.projectList.length) {
+                        
+                        this.projectList.forEach((item, index) => {
+
+                            //不管是否启动都执行
+                            item.isActive = false;
+                            localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
+                            
+                            this.closeServe(item, index, true);
+                        });
+                    }
+
+                    $currentWindow.close();
+                    $currentWindow.removeAllListeners('close');
+                }
+            }
         }
 	}
 </script>

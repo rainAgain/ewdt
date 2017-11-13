@@ -14,6 +14,8 @@
 
 <script>
 
+const $electron  = global.elRequire('electron');
+const $shell = $electron.shell;
 
 export default {
   name:'home',
@@ -22,13 +24,15 @@ export default {
     home2:'',
     home3:'',
     menuList: [
-      { id: 0, name: 'F9x', icon: 'auto', color: '', link:'auto', flag: false },
+      { id: 0, name: 'F9x', icon: 'auto', color: '', link:'auto', flag: 0 },
       // { id: 1, name: '单个打包', icon: 'serve', color: '', link:'serve', flag: false },
       // { id: 2, name: '接口调试', icon: '', color: '', link:'auto', flag: false },
       // { id: 3, name: '网络抓包', icon: '', color: '', link:'auto', flag: false },
       // { id: 4, name: '测试demo', icon: '', color: '', link:'example', flag: false },
-      { id: 5, name: '默认配置', icon: 'config', color: '', link:'config', flag: false },
-      { id: 6, name: '检查更新', icon: 'update', color: '', link:'update', flag: false },
+      { id: 5, name: '默认配置', icon: 'config', color: '', link:'config', flag: 0 },
+
+      { id: 6, name: '检查更新', icon: 'update', color: '', link:'update', flag: 0 },
+      { id: 7, name: '使用说明', icon: '', color: '', link:'https://github.com/rainAgain/ewdt', flag: 1 }
     ]
   }),
   methods: {
@@ -36,13 +40,16 @@ export default {
           window.close();
       }, 
       jumpLink(item) {
-
+          //flag 为 0 表示vue内部路由, 1 为外部链接
+          
           //此处没有用router-link
           //因为后续可能会直接点击跳转到一个新的子进程
           if(!item.flag) {
             this.$router.push({name: item.link})
+          } else if(item.flag == 1) {
+            $shell.openExternal(item.link);
           } else {
-            //打开子进程
+              //
           }
       },
       linkTo() {

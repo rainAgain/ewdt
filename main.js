@@ -19,7 +19,7 @@ let logo = path.join(__dirname, 'assets/favicon.ico');
 
 let mainWindow;
 let config = {
-    "downloadUrL": 'http://localhost:9001/protest.zip'    //原型文件下载地址
+    "downloadUrL": 'https://github.com/rainAgain/ewdt/releases/download/V1.0.0/prototype.zip'    //原型文件下载地址
 };
 
 function createWindow() {
@@ -83,10 +83,11 @@ function createWindow() {
         //设置文件存放位置
         const filePath = path.join(__dirname, './project/');
         //console.log(filePath);
-        item.setSavePath(filePath +item.getFilename());
+        item.setSavePath(filePath + item.getFilename());
         item.on('updated', (event, state) => {
             if (state === 'interrupted') {
                 console.log('Download is interrupted but can be resumed')
+                eventTemp.sender.send('download-protype-reply', 'resumed+');
             } else if (state === 'progressing') {
                 if (item.isPaused()) {
                     console.log('Download is paused')
@@ -108,8 +109,15 @@ function createWindow() {
                     })
                     unzipStream.on('close',() => {
                         //console.log('close');
-                        eventTemp.sender.send('download-protype-reply', 'end');
+                        eventTemp.sender.send('download-protype-reply', 'end+'+filePath +item.getFilename());
                         eventTemp = null;
+                        // setTimeout(() => {
+                        //     fs.unlink(filePath +item.getFilename(),(err) => {
+                        //         if(err) console.log(err);
+                                
+                        //     })
+                        // },1000);
+                        
                     })
                 fs.createReadStream(filePath + '/' + item.getFilename())
                     .pipe(unzipStream)

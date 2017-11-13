@@ -22,3 +22,7 @@ export const SAVE_CONFIG = (state, data) => {
 	
   	state.config = data;
 };
+
+export const SET_CLOSE = (state, data) => {
+  	state.isClose = true;
+};

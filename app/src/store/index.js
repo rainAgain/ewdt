@@ -18,7 +18,8 @@ const state = {
     port: '9800', //端口
     startPath: '/pages/default/index.html', //默认启动页
     outName: '-dist'
-  }
+  },
+  isClose: false
 };
 
 export default new Vuex.Store({

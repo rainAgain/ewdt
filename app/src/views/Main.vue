@@ -35,90 +35,91 @@ const $path = global.elRequire('path');
 const $fs = global.elRequire('fs');
 const $electron  = global.elRequire('electron');
 const $remote = $electron.remote;
+const $dialog = $remote.dialog;
 
 import {formatRootPath} from 'helper';
 import { mapGetters } from 'vuex';
 export default {
-  name: 'main',
-  data () {
-    return {
-      show: false,
-      openNames:['常用工具'],
-      menuList:[
-        {
-          id:0,
-          name:'常用工具',
-          icon: 'ios-paper',
-          route:'',
-          child:[
-            {
-              id: 0,
-              name: '启动服务器',
-              icon: '',
-              route: 'serve'
-            },
-            {
-              id:1,
-              name: '压缩css',
-              icon: '',
-              route: 'compressCss'
-            },
-            {
-              id:2,
-              name: '压缩js',
-              icon: '',
-              route: 'compressJs'
-            },
-            {
-              id:3,
-              name: '合并图片',
-              icon: '',
-              route: 'mergePic'
-            }
-          ]
+    name: 'main',
+    data () {
+        return {
+            show: false,
+            openNames:['常用工具'],
+            menuList:[
+                {
+                    id:0,
+                    name:'常用工具',
+                    icon: 'ios-paper',
+                    route:'',
+                    child:[
+                    {
+                        id: 0,
+                        name: '启动服务器',
+                        icon: '',
+                        route: 'serve'
+                    },
+                    {
+                        id:1,
+                        name: '压缩css',
+                        icon: '',
+                        route: 'compressCss'
+                    },
+                    {
+                        id:2,
+                        name: '压缩js',
+                        icon: '',
+                        route: 'compressJs'
+                    },
+                    {
+                        id:3,
+                        name: '合并图片',
+                        icon: '',
+                        route: 'mergePic'
+                    }
+                    ]
+                }
+            ]
         }
-      ]
-    }
-  },
-  computed:{
-   ...mapGetters([
-          'consoleList'
-      ])
-  },
-  methods:{
-    linkTo(name) {
-      this.$router.push({name: name});
     },
-    toggleConsole() {
-      this.show = !this.show;
-      if(this.show) {
-        this.showConsole();
-      }
+    computed:{
+    ...mapGetters([
+            'consoleList'
+        ])
     },
-    initGulpFile() {
-          
-          let rootName = $path.resolve(); //gulpfile.js所在目录
-          this.home = rootName;
+    methods:{
+        linkTo(name) {
+            this.$router.push({name: name});
+        },
+        toggleConsole() {
+            this.show = !this.show;
+            if(this.show) {
+            this.showConsole();
+            }
+        },
+        initGulpFile() {
+                
+            let rootName = $path.resolve(); //gulpfile.js所在目录
+            this.home = rootName;
 
-          this.home2 = 'env:' + $remote.process.env.npm_package_env;
+            this.home2 = 'env:' + $remote.process.env.npm_package_env;
 
-          //package.json中存在env参数，则表示为开发环境
-          //生产环境下获取不到package.json所以取不到该参数
-          if($remote.process.env.npm_package_env != 'development') {
-              
-              //发布环境
-              //后面可能需要区分window和linux环境的路径
-              rootName = `${rootName}\\resources\\app`;
-          }
-          this.home3 = 'rootName:' + rootName;
-          let rootInfo = {};
+            //package.json中存在env参数，则表示为开发环境
+            //生产环境下获取不到package.json所以取不到该参数
+            if($remote.process.env.npm_package_env != 'development') {
+                
+                //发布环境
+                //后面可能需要区分window和linux环境的路径
+                rootName = `${rootName}\\resources\\app`;
+            }
+            this.home3 = 'rootName:' + rootName;
+            let rootInfo = {};
 
-          rootInfo.rootPath = formatRootPath(rootName);
-          rootInfo.rootPan = rootInfo.rootPath.split(':')[0];
-        
-          this.$store.dispatch('getRoot', rootInfo);
+            rootInfo.rootPath = formatRootPath(rootName);
+            rootInfo.rootPan = rootInfo.rootPath.split(':')[0];
 
-          const content = `const gulp = require('gulp');
+            this.$store.dispatch('getRoot', rootInfo);
+
+            const content = `const gulp = require('gulp');
 const browserSync  = require('browser-sync');
 
 const cleanCSS = require('gulp-clean-css');
@@ -139,47 +140,72 @@ const gulpSequence = require('gulp-sequence');
 
 const pump = require('pump');
 
-`
-          $fs.writeFile(`${rootInfo.rootPath}/gulpfile.js`, content, () => {
-              console.log('初始化gulpfile.js成功');
-          })
-      },
-      showConsole() {
-          if(this.show) {
-              const len = this.consoleList.length;
-              if(len) {
-                  this.$nextTick(() => {
-                      this.$refs.li[len-1].scrollIntoView();
-                  });
-              }
-          }
-      },
-      clean() {
-        this.$store.dispatch('cleanConsole');
+        `
+            $fs.writeFile(`${rootInfo.rootPath}/gulpfile.js`, content, () => {
+                console.log('初始化gulpfile.js成功');
+            })
+        },
+        showConsole() {
+            if(this.show) {
+                const len = this.consoleList.length;
+                if(len) {
+                    this.$nextTick(() => {
+                        this.$refs.li[len-1].scrollIntoView();
+                    });
+                }
+            }
+        },
+        clean() {
+            this.$store.dispatch('cleanConsole');
 
-      }
-  },
-  mounted() {
-      this.initGulpFile();
-      this.showConsole();
+        },
+        closePage() {
+            let closeWindow = false
 
+            //$ipcRenderer.once('beforeunload',evt => {
+            window.addEventListener('beforeunload', evt => {
+                if (closeWindow) return
+
+                evt.returnValue = false
+
+                setTimeout(() => {
+                    let result = $dialog.showMessageBox({
+                        message: '是否确认退出应用?',
+                        buttons: ['是', '否']
+                    })
+
+                    if (result == 0) {
+                        
+                        closeWindow = true;
+
+                        this.$store.dispatch('setClose');
+                        
+                    }
+                }, 16)
+            })
+        }
+    },
+    mounted() {
+        this.initGulpFile();
+        this.showConsole();
 
         const initConfig = !!localStorage.d_config && localStorage.d_config != 'undefined' ? JSON.parse(localStorage.d_config) : {
-          port: '9800', //端口
-          startPath: '/pages/default/index.html', //默认启动页
-          outName: '-dist'
+            port: '9800', //端口
+            startPath: '/pages/default/index.html', //默认启动页
+            outName: '-dist'
         };
 
-      this.$store.dispatch('saveConfig', initConfig);
-
-  },
-  watch: {
-      "consoleList": function(val) {
-          if(val.length) {
-              this.showConsole();
-          }
-      }
-  }
+        this.$store.dispatch('saveConfig', initConfig);
+        
+        this.closePage();
+    },
+    watch: {
+        "consoleList": function(val) {
+            if(val.length) {
+                this.showConsole();
+            }
+        }
+    }
 }
 </script>
 

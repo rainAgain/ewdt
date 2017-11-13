@@ -14,3 +14,8 @@ export const cleanConsole = ({ commit }, data) => {
 export const saveConfig = ({ commit }, data) => {
   commit('SAVE_CONFIG', data);
 };
+
+//设置为关闭状态
+export const setClose = ({ commit }, data) => {
+    commit('SET_CLOSE');
+  };
