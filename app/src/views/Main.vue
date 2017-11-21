@@ -131,6 +131,7 @@ const sprite = require('rain-css-img-sprite');
 const rename = require('gulp-rename');
 const rimrafFolder = require('rimraf');
 const rimraf = require('gulp-rimraf');
+const sass = require('gulp-sass');
 
 const imagemin = require('gulp-imagemin');
 const pngquant = require('imagemin-pngquant');
@@ -179,7 +180,6 @@ const pump = require('pump');
                         closeWindow = true;
 
                         this.$store.dispatch('setClose');
-                        
                     }
                 }, 16)
             })

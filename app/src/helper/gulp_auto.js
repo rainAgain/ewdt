@@ -123,7 +123,7 @@ gulp.task('${outPutDirStr}_release_uglifyJs', () => {
 });
 
 gulp.task('${outPutDirStr}_del_min', () => {
-    return gulp.src([ '${outPutPagesDir}/**/*.min.min.js', '${outPutPagesDir}/**/*.min.min.css'], { read: false })
+    return gulp.src([ '${outPutPagesDir}/**/*.min.min.js', '${outPutPagesDir}/**/*.min.min.css','${outPutPagesDir}/**/*.scss'], { read: false })
     .pipe(rimraf({ force: true }));
 });
 

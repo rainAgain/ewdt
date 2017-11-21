@@ -158,17 +158,52 @@ const uglifyBootJS = function(name, path, outPath) {
  * @param  {[type]} startPath  [默认打开目录]
  * @return {[type]}       [description]
  */
-const startAutoServer = function(name, path, files, port, startPath) {
-  files = files ? files: ['**'];
+const startAutoServer = function(name, path, files, port, startPath, isSass) {
+  let fileUrl;
+  console.log(files);
+  if(!isSass) {
+      fileUrl = files ? `['${files}/**']` : ['**'];
+  } else {
+    fileUrl = `[
+      '${files}/**/*.{html,js,css}',
+      {
+        match:['${files}/**/*.scss'],
+        fn: function() {
+          return gulp.src('${files}/**/*.scss')
+            .pipe(sass())
+            .pipe(gulp.dest('${files}'))
+        }
+      }
+    ]`;
+  }
+  
 
-  return `gulp.task('${name}', function() {
+  return `
+gulp.task('${name}', function() {
     browserSync.init({
-        files: ${files},
+        files: ${fileUrl},
         server: {
             baseDir: '${path}',
             index: 'index.html'
         },
+        notify: {
+            styles: [
+                "margin: 0",
+                "padding: 5px",
+                "position: fixed",
+                "font-size: 10px",
+                "z-index: 9999",
+                "bottom: 0px",
+                "right: 0px",
+                "border-radius: 0",
+                "border-top-left-radius: 5px",
+                "background-color: rgba(60,197,31,0.5)",
+                "color: white",
+                "text-align: center"
+            ]
+        },
         startPath: '${startPath}',
+        reloadDelay: 0,
         port: ${port}
     });
 });

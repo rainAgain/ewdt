@@ -3,13 +3,13 @@
 		<div class="btn-box">
 			<Row>
 		        <Col span="6" class="btns-col">
-			        <Button type="ghost" class="btns" @click="addFolder">
-						<Icon type="plus-round"></Icon> 选择目录
+			        <Button type="ghost" class="btns" @click="createFolder">
+						<Icon type="plus-round"></Icon> 创建
 					</Button>
 				</Col>
 		        <Col span="6" class="btns-col">
-		        	<Button type="ghost" class="btns" @click="release">
-						<Icon title="配置" type="gear-b"></Icon> 发布
+		        	<Button type="ghost" class="btns" @click="addFolder">
+						<Icon title="配置" type="gear-b"></Icon> 添加
 					</Button>
 		        </Col>
 		        <Col span="6" class="btns-col">
@@ -42,6 +42,7 @@
 							<label></label>
 						</div>
 			            <Icon class="operation-btn" type="ios-trash-outline" title="删除" @click.native="deleteItem(item,index)"></Icon>
+			            <Icon class="operation-btn" type="gear-b" title="发布" @click.native="release(item,index)"></Icon>
 			        </div>
 				</div>
 			</li>
@@ -73,6 +74,9 @@
 					<ul class="layer-ul">
 					    <li>
 					    	<Checkbox v-model="functions.liveLoad">开启 LiveReload 浏览器自动刷新 (默认开启)</Checkbox>
+					    </li>
+					    <li>
+					    	<Checkbox v-model="functions.sass">开启 sass 编译 (默认开启)</Checkbox>
 					    </li>
 					</ul>
 				</div>
@@ -175,7 +179,8 @@
 				relStatus: 'active',	//进度条状态
 				
 				functions: {
-					liveLoad: true  //是否在创建的时候启动liveLoad
+					liveLoad: true,  //是否在创建的时候启动liveLoad
+					sass: true
                 },
                 
                 releaseFuns: ['autoprefixer','minicss','uglifyJs'],	//发布的功能配置
@@ -228,6 +233,10 @@
 		methods: {
 			//添加目录
 			addFolder() {
+				
+			},
+			//创建目录
+			createFolder() {
 				if( this.interValTime ) {
 					clearInterval(this.interValTime);
 				}
@@ -352,7 +361,8 @@
                     projectPath: projectPath,
                     defaultStart: this.defaultStart,
                     isActive: false,
-                    isStart: false
+                    isStart: false,
+                    isSass: this.functions.sass
                 })
 
                 localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
@@ -408,10 +418,10 @@
 
                         const urlStr = item.projectPath.split($path.sep).join('_').replace(/:/g,'').toLowerCase();//路径分割名称
                       	const folderName = `task_autoserve_${urlStr}`;  //任务名称
-                        const files = `['${projectPath}/pages/**']`;    //监听的文件目录
+                        const files = `${projectPath}/pages`;    //监听的文件目录
                           
                         //返回启动服务器的任务命令
-                      	const task = startAutoServer(folderName, folderPath, files, this.defaultConfig.port, item.defaultStart);
+                      	const task = startAutoServer(folderName, folderPath, files, this.defaultConfig.port, item.defaultStart, item.isSass);
 
                         //将task写入gulpfile.js
                       	$fs.appendFile(`${this.rootPath}/gulpfile.js`, task,  () => {
@@ -477,6 +487,7 @@
 
 	                } catch(e) {
 	                    console.log(e);
+	                    logFile(`[startLiveLoad] e`);
 	                }
 				}
 			},
@@ -537,11 +548,8 @@
                 
 	        },
 	        //点击发布
-	        release() {
-	        	if(this.selected === null) {
-	        		this.$Message.warning('请先选择要发布的项目！');
-	        		return;
-	        	}
+	        release(item, index) {
+	        	this.selected = item;
 
 	        	if( this.relInterValTime ) {
 					clearInterval(this.relInterValTime);
@@ -785,8 +793,9 @@
         },
         watch:{
             'isClose':function(val) {
-                console.log(val)
+
                 if(val) {
+
                     if(this.projectList.length) {
                         
                         this.projectList.forEach((item, index) => {
