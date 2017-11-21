@@ -208,7 +208,11 @@
 				deleteObj: {
 					item:'',
 					index:''
-				}   //删除的对象
+				},   //删除的对象
+				addInfo: {
+					folderPath: '',
+					projectPath: ''
+				}
 			}
 		},
 		computed:{
@@ -233,7 +237,48 @@
 		methods: {
 			//添加目录
 			addFolder() {
+				const dialog = $remote.dialog;
 				
+				dialog.showOpenDialog({
+			        properties: ['openFile', 'openDirectory']
+			    }, (path) => {
+			    	try {
+			    		this.$console(path[0]);
+			    		this.addInfo.projectPath = path[0];
+
+                        const pathArg = path[0].split(this.sep);
+                        const len = pathArg.length;
+                        const projectName = pathArg[len-1];
+                        pathArg.pop();
+
+                        this.addInfo.folderPath = pathArg.join(this.sep);
+
+                        const projectPath = this.addInfo.projectPath;
+
+		                this.$set(this.projectList, this.projectList.length, {
+		                    id: this.projectList.length,
+		                    name: projectName,
+		                    folderPath: this.addInfo.folderPath,
+		                    projectPath: projectPath,
+		                    defaultStart: '/' + projectName + '/pages/default/index.html',
+		                    isActive: false,
+		                    isStart: false,
+		                    isSass: true
+		                })
+
+		                localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
+				        
+				        this.selected = this.projectList.length-1;
+						this.choose  = this.projectList[this.projectList.length-1];
+
+			    	} catch(e) {
+			    		console.log('没有选择');
+			    		this.$console('no select');
+			    	}
+			    });
+			},
+			addProject() {
+
 			},
 			//创建目录
 			createFolder() {
@@ -269,8 +314,7 @@
 				this.config.name = '';
 				this.functions.liveLoad = true;
                 this.isHasShow = false;
-                this.isShowLayer = false;
-                
+                this.isShowLayer = false;  
 			},
 			//创建项目
 			createProject() {
@@ -520,7 +564,7 @@
                 //删除本地存储中的数据
 	        	const deleteItem = () => {
 
-	        		this.$console(`${item.folderPath} liveLoad has removed!`);
+	        		this.$console(`${item.name} liveLoad has removed!`);
 
 	        		projectList.splice(index,1);
 
@@ -549,7 +593,7 @@
 	        },
 	        //点击发布
 	        release(item, index) {
-	        	this.selected = item;
+	        	this.selected = index;
 
 	        	if( this.relInterValTime ) {
 					clearInterval(this.relInterValTime);
@@ -714,82 +758,6 @@
 		mounted() {
 			
             this.initData();
-
-
-            
-
-            //当软件关闭时，结束启动的所有服务器
-			// $currentWindow.on('close', (event) => {
-               
-
-            //     logFile(`[currentWindow close] ${this.projectList.length}`);
-            //     if(this.projectList.length) {
-                    
-            //         this.projectList.forEach((item, index) => {
-
-            //             //不管是否启动都执行
-            //             item.isActive = false;
-
-            //             logFile(`[currentWindow close forEach] ${item.isActive}`);    
-            //             this.closeServe(item, index, true);
-            //         });
-            //     } else {
-            //         $currentWindow.close();
-            //         $currentWindow.removeAllListeners('close');
-            //     }
-				
-            //     //在执行这边方法的时候，closeServe中的kill方法的貌似不会进去，故这边也重置一下
-            //     //但是，那边的$currentWindow.remove 和close明明是执行了的，不然cmd会报错，这里不太理解
-            //     //待深入和优化
-            //     localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
-
-            //     //很重要！！！阻止程序的默认事件,不能放最前面
-            //     event.preventDefault();
-            // });
-
-            
-
-            // if(!sessionStorage.hasListenBefore) {
-            //     sessionStorage.hasListenBefore = 1;
-
-                // let closeWindow = false
-
-                // //$ipcRenderer.once('beforeunload',evt => {
-                // window.addEventListener('beforeunload', evt => {
-                //     if (closeWindow) return
-
-                //     evt.returnValue = false
-
-                //     setTimeout(() => {
-                //         let result = $dialog.showMessageBox({
-                //             message: '是否确认退出应用?',
-                //             buttons: ['是', '否']
-                //         })
-
-                //         if (result == 0) {
-                            
-                //             closeWindow = true
-                            
-                //             if(this.projectList.length) {
-                        
-                //                 this.projectList.forEach((item, index) => {
-
-                //                     //不管是否启动都执行
-                //                     item.isActive = false;
-                //                     localStorage.setItem('auto_project_collection', JSON.stringify(this.projectList));
-                                    
-                //                     this.closeServe(item, index, true);
-                //                 });
-                //             }
-
-                //             $currentWindow.close();
-                //             $currentWindow.removeAllListeners('close');
-                //         }
-                //     }, 16)
-                // })
-           // }
-            
-            
         },
         watch:{
             'isClose':function(val) {
