@@ -109,14 +109,16 @@ export default {
                 
                 //发布环境
                 //后面可能需要区分window和linux环境的路径
-                rootName = `${rootName}\\resources\\app`;
+                rootName = `${rootName}\\resources\\app.asar.unpacked\\gulprepo`;
+            } else {
+                rootName = `${rootName}\\gulprepo`;
             }
             this.home3 = 'rootName:' + rootName;
             let rootInfo = {};
 
             rootInfo.rootPath = formatRootPath(rootName);
             rootInfo.rootPan = rootInfo.rootPath.split(':')[0];
-
+        
             this.$store.dispatch('getRoot', rootInfo);
 
             const content = `const gulp = require('gulp');

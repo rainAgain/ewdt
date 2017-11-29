@@ -117,3 +117,39 @@ export function bootFile(config, callback) {
 		});
 	});
 }
+
+export function bootVersion(config,callback) {
+    
+        const rootPath = config.rootPath;	//boot.js原型文件地址
+    
+        //读取boot.js
+        $fs.readFile(rootPath,'utf-8',(err,data) => {
+    
+            if(err) {
+                console.log(err);
+                return false;
+            }
+    
+            const beginStr = 'window.Config = ';
+            const endStr = 'configEnd';
+    
+            const begin = data.indexOf(beginStr) + beginStr.length;
+            const end = data.indexOf(endStr) - 4; //4表示configEnd结尾的（;// ），注意有个空格
+    
+            const configStr = data.substring(begin, end);
+    
+            const headStr = data.substring(0, begin);
+            const footStr = data.substring(end, data.length);
+    
+            const newStr = configStr.replace(reg, function(word) { // 去除注释后的文本  
+                return /^\/{2,}/.test(word) || /^\/\*/.test(word) ? "" : word;  
+            });
+    
+            const configObj = JSON.parse(newStr);
+            console.log(configObj)
+            if(typeof callback == 'function') {
+                callback(configObj.version);
+            }
+           
+        });
+    }

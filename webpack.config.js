@@ -88,7 +88,7 @@ module.exports = {
     			filename:'./index.html',
     			inject:true,
     			template:'./app/index.html',
-    			favicon:'asset/favicon.ico',
+    			favicon:'icon/favicon.ico',
     			hash:false,
                 chunksSortMode: 'dependency'
     		}),

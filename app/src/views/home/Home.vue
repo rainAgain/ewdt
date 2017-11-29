@@ -7,7 +7,18 @@
           </div>
           <p>{{item.name}}</p>
       </li>
-      
+      <!-- 检查更新 -->
+      <li class="item" @click="checkUpdate"> 
+          <div class="icon update">
+              
+          </div>
+          <p>{{updateContent}}</p>
+
+        <!-- <Circle :percent="percent" :stroke-color="color">
+            <Icon v-if="percent == 100" type="ios-checkmark-empty" size="60" style="color:#5cb85c"></Icon>
+            <span v-else style="font-size:24px">{{ percent }}%</span>
+        </Circle> -->
+      </li>
     </menu>
   </div>
 </template>
@@ -15,6 +26,7 @@
 <script>
 
 const $electron  = global.elRequire('electron');
+const $ipcRenderer = $electron.ipcRenderer;
 const $shell = $electron.shell;
 
 export default {
@@ -23,6 +35,8 @@ export default {
     home:'',
     home2:'',
     home3:'',
+    percent: 0,
+    updateContent: '检查更新',
     menuList: [
       { id: 0, name: 'F9x', icon: 'auto', color: '', link:'auto', flag: 0 },
       // { id: 1, name: '单个打包', icon: 'serve', color: '', link:'serve', flag: false },
@@ -30,11 +44,20 @@ export default {
       // { id: 3, name: '网络抓包', icon: '', color: '', link:'auto', flag: false },
       // { id: 4, name: '测试demo', icon: '', color: '', link:'example', flag: false },
       { id: 5, name: '默认配置', icon: 'config', color: '', link:'config', flag: 0 },
-
-      { id: 6, name: '检查更新', icon: 'update', color: '', link:'update', flag: 0 },
-      { id: 7, name: '使用说明', icon: '', color: '', link:'https://github.com/rainAgain/ewdt', flag: 1 }
+      { id: 7, name: '使用说明', icon: 'use', color: 'use', link:'https://github.com/rainAgain/ewdt', flag: 1 }
+    //   { id: 6, name: '检查更新', icon: 'update', color: '', link:'update', flag: 0 }
+      
     ]
   }),
+   computed: {
+        color () {
+            let color = '#2db7f5';
+            if (this.percent == 100) {
+                color = '#5cb85c';
+            }
+            return color;
+        }
+    },
   methods: {
       close(){
           window.close();
@@ -62,8 +85,22 @@ export default {
       otherFun() {
           console.log('')
       },
+      checkUpdate() {
+
+      }
       //初始化gulpfile.js文件
 
+  },
+  mounted() {
+    $ipcRenderer.on('updatemessage', (event, text) => {
+        if(text == "hasUpdate") {
+            this.updateContent = "有新版本"
+        } else if(text == "noUpdate") {
+            this.updateContent = "已是最新"
+        } else if(text.indexOf('Downloaded') > -1) {
+            this.updateContent = text.split('Downloaded')[1];
+        }
+    })
   },
 //   beforeCreate() {
 //     console.log('this is beforeCreate');

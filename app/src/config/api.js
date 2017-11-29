@@ -71,6 +71,12 @@ var queryMerchantInRedis = (params) => commonFetch({
   params: params
 })
 
+//获取github上的最新版本
+var  getF9Version = () => commonFetch({
+    url: config.getF9Version,
+    method: 'GET'
+})
+  
 
 //图片上传
 export const actionUrl = config.actionUrl//头像上传
@@ -82,5 +88,7 @@ export {
   getNearShop,
   queryMerchantInRedis,
   test,
-  testMock
+  testMock,
+
+  getF9Version
 }

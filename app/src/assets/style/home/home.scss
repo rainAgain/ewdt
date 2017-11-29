@@ -56,6 +56,11 @@
             background-color: #12dbad;
             
         }
+        &.use {
+            background-image: url('../../imgages/use.png');
+            background-size: 50% 50%;
+            background-color: #f7b40a;
+        }
       }
       p {
         padding: 5px 0;

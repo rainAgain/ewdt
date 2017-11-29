@@ -10,4 +10,5 @@ export default {
   iconUrl:`${config.iconUrl}`,//头像上传
   actionUrl:`${config.actionUrl}`,//图片上传
 
+  getF9Version: 'https://api.github.com/repos/rainAgain/ewdt/releases/latest'
 };

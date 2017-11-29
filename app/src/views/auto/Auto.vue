@@ -148,13 +148,15 @@
 
 
 	import { uglifyBootJS, copy, startAutoServer } from 'GulpTask';
-	import { bootFile } from 'bootTem';
+	import { bootFile, bootVersion } from 'bootTem';
 	import { mapGetters } from 'vuex';
 	import { execGulpTask, consoleLog } from 'mixin';
 	import { formatRootPath } from 'helper';
     import { autoRelease } from 'GulpAuto';
     
     import { logFile } from 'logger';
+
+    import { getF9Version } from 'Api';
 
 	import AutoItem from '../../components/auto/AutoItem';
 
@@ -276,9 +278,6 @@
 			    		this.$console('no select');
 			    	}
 			    });
-			},
-			addProject() {
-
 			},
 			//创建目录
 			createFolder() {
@@ -724,10 +723,25 @@
             },
             //更新原型
             updateProtype() {
-                this.isUpdating = true;
-                $ipcRenderer.send('download-protype', 'begin');
-                console.log(111);
+                const bootRootPath = this.rootPath + '/project/prototype/js/boot/boot.js';
 
+                //获取现有原型项目的版本
+                bootVersion({
+                    rootPath: bootRootPath
+                },(res => {
+                    getF9Version().then( info => {
+                        if(info.id) {
+                           const newVersion = info.name.replace('F9x','');
+                           if(newVersion != res) {
+                               this.isUpdating = true;
+                               $ipcRenderer.send('download-protype', 'begin+' + info.tag_name);
+                           } else {
+                               this.isUpdating = false;
+                               this.$Message.info('当前版本已为最新版');
+                           }
+                        }
+                    });
+                }));
             },
 			//初始化
           	initData() {
@@ -761,7 +775,7 @@
         },
         watch:{
             'isClose':function(val) {
-
+                console.log('va:'+val);
                 if(val) {
 
                     if(this.projectList.length) {
