@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="renderer" content="webkit">
+    <title>基础页面</title>
+    <script>
+        document.write('<script src="../../js/boot/boot.min.js?' + Math.random() + '"></scr' + 'ipt>');
+    </script>
+    <script>
+        ResBoot.output('./css/page1.css');
+    </script>
+</head>
+
+<body>
+    <div id="header" class="header"></div>
+
+    <div id="main" class="main">
+    </div>
+
+    <div id="footer" class="footer"></div>
+
+    <script type="text/x-template" id="user-tpl">
+        <p>{{username}} - {{department}}，欢迎您！</p>
+    </script>
+
+    <!-- 配置放于最前 -->
+    <script>
+    Config.ajaxUrls.mock = {
+        getUserInfo: '_test/getuserinfo'
+    };
+
+    Config.ajaxUrls.real = {
+    }
+
+    </script>
+
+    <!-- 输出公共资源 -->
+    <script>ResBoot.output(Config.resExport.js);</script>
+
+    <!-- 加载页面自身所需资源 -->
+    <script>
+        Util.loadJs('./js/page1.js');
+    </script>
+</body>
+
+</html>

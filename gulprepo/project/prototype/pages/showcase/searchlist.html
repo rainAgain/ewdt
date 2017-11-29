@@ -1,0 +1,140 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="renderer" content="webkit">
+    <title>搜索条件列表页</title>
+    <script>
+        document.write('<script src="../../js/boot/boot.min.js?' + Math.random() + '"></scr' + 'ipt>');
+    </script>
+    <script>
+        ResBoot.output([
+            'js/widgets/chosen/chosen.css',
+            'js/widgets/pagination/mricode.pagination.css',
+            './css/searchlist.css'
+        ]);
+    </script>
+</head>
+
+<body>
+    <div id="header" class="header"></div>
+
+    <div id="main" class="container invisible">
+        <!-- 列表header-bar -->
+        <div class="list-header clearfix">
+            <h3 class="list-header-title">应用</h3>
+            <span class="list-total">共<i id="list-total">0</i>条数据</span>
+            <div class="search-bar r">
+                <div class="sort-container">
+                    <select name="" id="sort-select" class="sort-select">
+                        <option value="0">综合排序</option>
+                        <option value="1">浏览次数升序</option>
+                        <option value="2">浏览次数降序</option>
+                        <option value="3">更新时间升序</option>
+                        <option value="4">更新时间降序</option>
+                        <option value="5">评分升序</option>
+                        <option value="6">评分降序</option>
+                    </select>
+                </div>
+                <div class="search-input-container">
+                    <input type="text" class="input" id="resourcename" placeholder="关键字搜索" />
+                    <i class="search-bar-icon" id="search-bar-icon" title="点击搜索"></i>
+                </div>
+            </div>
+        </div>
+        <!-- 列表条件area -->
+        <div class="list-option-wrap" id="list-option">
+            <div class="list-option-panel">
+                <span class="name">数据领域</span>
+                <ul class="list-options clearfix" id="data-area">
+                </ul>
+                <span class="btn-toggle hidden">展开</span>
+            </div>
+            <div class="list-option-panel">
+                <span class="name">提供机构</span>
+                <ul class="list-options clearfix" id="provide-dep">
+
+                </ul>
+                <span class="btn-toggle hidden">展开</span>
+            </div>
+        </div>
+        <!-- 列表区域 -->
+        <div class="list-content">
+            <table class="list-std">
+                <thead>
+                    <tr>
+                        <th width="50">序</th>
+                        <th width="370">资源名称</th>
+                        <th width="160">提供机构</th>
+                        <th width="110">浏览次数</th>
+                        <th width="120">更新时间</th>
+                        <th>评分</th>
+                    </tr>
+                </thead>
+                <tbody id="resource-list">
+
+                </tbody>
+            </table>
+        </div>
+        <!-- 分页 -->
+        <div class="list-pager m-pagination" id="pager"></div>
+    </div>
+
+    <div id="footer" class="footer"></div>
+
+    <!-- 查询条件模板 -->
+    <script type="text/x-template" id="option-tpl">
+        {{#subList}}
+        <li class="list-option-item" data-id={{itemvalue}}>
+            {{itemtext}}{{#resourcecount}}（{{resourcecount}}）{{/resourcecount}}
+        </li>
+        {{/subList}}
+    </script>
+
+    <!--列表模板-->
+    <script type="text/x-template" id="list-tmpl">
+        {{#resourceList}}
+        <tr>
+            <td>{{order}}</td>
+            <td>
+                <span class="resource-title"><a href="resourcedetail.html?rowguid={{rowGuid}}">{{resourcesName}}</a></span>
+            </td>
+            <td>{{provideDepartName}}</td>
+            <td>{{vistCnt}}</td>
+            <td>{{registDate}}</td>
+            <td>
+                <div class="score-pic {{starcls}}">
+                </div>
+            </td>
+        </tr>
+        {{/resourceList}}
+    </script>
+
+    <!-- 配置放于最前 -->
+    <script>
+    Config.ajaxUrls.mock = {
+        getOption: "test/getOption",
+        loadListData: "test/loadListData"
+    };
+
+    Config.ajaxUrls.real = {
+    };
+
+    </script>
+
+    <!-- 输出公共资源 -->
+    <script>ResBoot.output(Config.resExport.js);</script>
+
+    <!-- 加载页面自身所需资源 -->
+    <script>
+        ResBoot.output([
+            'js/widgets/chosen/chosen.jquery.min.js',
+            'js/widgets/pagination/mricode.pagination.js',
+            './js/searchlist.js'
+        ]);
+    </script>
+</body>
+
+</html>
