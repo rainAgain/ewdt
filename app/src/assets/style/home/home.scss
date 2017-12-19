@@ -20,7 +20,7 @@
       
       padding: 20px 10px 10px 10px;
       .icon {
-        width: 100%;
+        width: 100% !important;
         padding-bottom: 100%;
         
         border-radius: 50%;
@@ -62,12 +62,22 @@
             background-color: #f7b40a;
         }
       }
+      .circle-icon {
+          height: 1px !important;
+          cursor: default;
+          &:hover {
+            box-shadow:none;
+          }
+      }
       p {
         padding: 5px 0;
         font-size: 16px;
         text-align:center;
         
         color: #2196f3;
+      }
+      .check-word {
+          font-size: 12px;
       }
     }
   }

@@ -8,18 +8,17 @@
           <p>{{item.name}}</p>
       </li>
       <!-- 检查更新 -->
-      <li class="item" @click="checkUpdate"> 
-          <div class="icon update">
-              
-          </div>
-          <p>{{updateContent}}</p>
+      <!-- <li class="item" @click="checkUpdate"> 
+         
+          
+            <i-circle :percent="percent" class="icon update circle-icon" :stroke-width="8" :stroke-color="color" :trail-color="'#12dbad'">
+            </i-circle>
+               
+          <p class="check-word">{{updateContent}}</p>
+      </li> -->
 
-        <!-- <Circle :percent="percent" :stroke-color="color">
-            <Icon v-if="percent == 100" type="ios-checkmark-empty" size="60" style="color:#5cb85c"></Icon>
-            <span v-else style="font-size:24px">{{ percent }}%</span>
-        </Circle> -->
-      </li>
     </menu>
+     
   </div>
 </template>
 
@@ -35,8 +34,8 @@ export default {
     home:'',
     home2:'',
     home3:'',
-    percent: 0,
-    updateContent: '检查更新',
+    // percent: 0,
+    updateContent: '检查更新中…',
     menuList: [
       { id: 0, name: 'F9x', icon: 'auto', color: '', link:'auto', flag: 0 },
       // { id: 1, name: '单个打包', icon: 'serve', color: '', link:'serve', flag: false },
@@ -50,13 +49,13 @@ export default {
     ]
   }),
    computed: {
-        color () {
-            let color = '#2db7f5';
-            if (this.percent == 100) {
-                color = '#5cb85c';
-            }
-            return color;
-        }
+        // color () {
+        //     let color = '#2db7f5';
+        //     if (this.percent == 100) {
+        //         color = '#12dbad';
+        //     }
+        //     return color;
+        // }
     },
   methods: {
       close(){
@@ -92,15 +91,16 @@ export default {
 
   },
   mounted() {
-    $ipcRenderer.on('updatemessage', (event, text) => {
-        if(text == "hasUpdate") {
-            this.updateContent = "有新版本"
-        } else if(text == "noUpdate") {
-            this.updateContent = "已是最新"
-        } else if(text.indexOf('Downloaded') > -1) {
-            this.updateContent = text.split('Downloaded')[1];
-        }
-    })
+    // $ipcRenderer.on('updatemessage', (event, text) => {
+    //     if(text == "hasUpdate") {
+    //         this.updateContent = "有新版本"
+    //     } else if(text == "noUpdate") {
+    //         this.updateContent = "已是最新"
+    //     } else if(text.indexOf('Downloaded') > -1) {
+    //         this.updateContent = "正在更新";
+    //         this.percent = Math.floor(+text.split('Downloaded')[1]);
+    //     }
+    // })
   },
 //   beforeCreate() {
 //     console.log('this is beforeCreate');

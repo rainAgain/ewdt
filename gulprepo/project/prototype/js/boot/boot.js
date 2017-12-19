@@ -3,7 +3,7 @@
  */
 (function() {
     window.Config = {
-        "version": "1.0.6",
+        "version": "1.0.3",
 
         // 直接指向前端工程的根目录
         // 如：http://www.zwfw.com/f9xapp/pages/account/login.html，basePath 则为 '/f9xapp'

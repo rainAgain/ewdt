@@ -19,7 +19,7 @@
 		        </Col>
                 <Col span="6" class="btns-col">
 		        	<Button type="ghost" class="btns" :loading="isUpdating"  @click="updateProtype">
-						更新原型
+						{{updateStr}}
 					</Button>
 		        </Col>
 		    </Row>
@@ -199,6 +199,7 @@
                 deleteStr: '删除全部',
 
                 isUpdating: false,//更新进度
+                updateStr: '更新原型',
 				//defaultStartPath: '/pages/default/index.html',
 				//execChild:'',
 				//port:'9800',
@@ -734,9 +735,11 @@
                            const newVersion = info.name.replace('F9x','');
                            if(newVersion != res) {
                                this.isUpdating = true;
+                               this.updateStr = ' ';
                                $ipcRenderer.send('download-protype', 'begin+' + info.tag_name);
                            } else {
                                this.isUpdating = false;
+                               this.updateStr = '更新原型';
                                this.$Message.info('当前版本已为最新版');
                            }
                         }
@@ -759,9 +762,11 @@
                         //暂时保留
                         
                         this.isUpdating = false;
+                        this.updateStr = '更新原型';
                         this.$Message.info('更新已完成');
                     } else if(args[0] == 'resumed') {
                         this.isUpdating = false;
+                        this.updateStr = '更新原型';
                         this.$Message.warning('更新失败请重试');
                     }
                 });

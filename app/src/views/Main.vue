@@ -25,6 +25,7 @@
                   </div>
                 </transition>
             </div>
+            <div v-if="!show" class="version">{{versionText}}</div>
         </div>
     </div>
 </template>
@@ -34,6 +35,7 @@
 const $path = global.elRequire('path');
 const $fs = global.elRequire('fs');
 const $electron  = global.elRequire('electron');
+const $ipcRenderer = $electron.ipcRenderer;
 const $remote = $electron.remote;
 const $dialog = $remote.dialog;
 
@@ -45,6 +47,7 @@ export default {
         return {
             show: false,
             openNames:['常用工具'],
+            versionText:'检查更新中…',
             menuList:[
                 {
                     id:0,
@@ -200,6 +203,18 @@ const pump = require('pump');
         this.$store.dispatch('saveConfig', initConfig);
         
         this.closePage();
+
+
+        $ipcRenderer.on('updatemessage', (event, text) => {
+            if(text == "hasUpdate") {
+                this.versionText = "有新版本"
+            } else if(text.indexOf('noUpdate') > -1) {
+                this.versionText = "已是最新 v" + text.split('noUpdate')[1];
+            } else if(text.indexOf('Downloaded') > -1) {
+                const percent = Math.floor(+text.split('Downloaded')[1]);
+                this.versionText = "正在更新 " + percent + '%';
+            }
+        })
     },
     watch: {
         "consoleList": function(val) {
@@ -305,6 +320,15 @@ const pump = require('pump');
                 cursor: pointer;
               }
           }
+      }
+      .version {
+          line-height: 20px;
+          font-size: 12px;
+          color: #666;
+          padding-left: 10px;
+          position: absolute;
+          bottom:0;
+          left: 0;
       }
       
   }

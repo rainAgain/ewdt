@@ -23,12 +23,15 @@ let config = {
     "downloadUrL": 'https://github.com/rainAgain/ewdt/releases/download/V1.0.0/prototype.zip'    //原型文件下载地址
 };
 
+//通信
 function sendStatusToWindow(text) {
     mainWindow.webContents.send('updatemessage', text);
 }
-  
+
+//创建窗口
 function createWindow() {
-    
+    //检查更新
+    autoUpdater.checkForUpdatesAndNotify();
     // installExtension.default(installExtension.VUEJS_DEVTOOLS)
     //   .then((name) => console.log(`Added Extension:  ${name}`))
     //   .catch((err) => console.log('An error occurred: ', err));
@@ -61,9 +64,6 @@ function createWindow() {
             }));
 
         }
-    
-
-   
 
     // 加载完毕显示
     mainWindow.webContents.on('did-finish-load', function() {
@@ -71,10 +71,9 @@ function createWindow() {
     });
 
     // Open the DevTools.
-    mainWindow.webContents.openDevTools();
+    // mainWindow.webContents.openDevTools();
    
-
-    //download
+    //下载原型
     var eventTemp = null;
     ipc.on('download-protype',function(event, arg) {
         if(arg.split('+')[0] == 'begin') {
@@ -87,8 +86,8 @@ function createWindow() {
     mainWindow.webContents.session.on('will-download', (event, item, webContents) => {
         //设置文件存放位置
         const filePath = path.join(__dirname, './gulprepo/project/');
-        //console.log(filePath);
         const fileName = item.getFilename();
+
         item.setSavePath(filePath + fileName);
 
         item.on('updated', (event, state) => {
@@ -102,7 +101,9 @@ function createWindow() {
                     console.log(`Received bytes: ${item.getReceivedBytes()}`)
                 }
             }
-        })
+        });
+
+        //解压下载的原型zip
         item.once('done', (event, state) => {
             if (state === 'completed') {
                 console.log('Download successfully')
@@ -110,10 +111,10 @@ function createWindow() {
                 const unzipStream = unzip.Extract({ path: filePath });
                     unzipStream.on('finish',() => {
                         //console.log('finish');
-                    })
+                    });
                     unzipStream.on('end',() => {
                         //console.log('end');
-                    })
+                    });
                     unzipStream.on('close',() => {
                         try {
                             eventTemp.sender.send('download-protype-reply', 'end+'+filePath + fileName);
@@ -121,50 +122,69 @@ function createWindow() {
                             eventTemp.sender.send('download-protype-reply', 'resumed+');
                         }
                         
-                    })
+                    });
                 fs.createReadStream(filePath + '/' + item.getFilename())
                     .pipe(unzipStream)
 
             } else {
                 console.log(`Download failed: ${state}`)
             }
-        })
-    })
+        });
+    });
 
-    //download end
+    //关闭应用
     mainWindow.on('closed', function(e) {
 
-        //mainWindow.removeAllListeners();
         mainWindow = null;
-        //e.preventDefault();
-        
         console.log('closed');
-
-
     });
 }
 
+
+//检查更新
 autoUpdater.on('checking-for-update', () => {
-    sendStatusToWindow('Checking for update...');
-})
+    sendStatusToWindow('检查更新');
+});
+
 autoUpdater.on('update-available', (info) => {
     sendStatusToWindow('hasUpdate');
-})
+
+    // dialog.showMessageBox({
+    //     type: 'info',
+    //     title: '找到新版本',
+    //     message: '是否希望下载新版本?',
+    //     buttons: ['下载', '取消']
+    //   }, (buttonIndex) => {
+    //     if (buttonIndex === 0) {
+    //       autoUpdater.downloadUpdate()
+    //     }
+    //   })
+});
+
 autoUpdater.on('update-not-available', (info) => {
-    sendStatusToWindow('noUpdate');
-})
+    //已经为最新版
+    sendStatusToWindow('noUpdate'+ info.version);
+});
+
 autoUpdater.on('error', (err) => {
+    //更新失败
     sendStatusToWindow('Error in auto-updater. ' + err);
-})
+});
+
 autoUpdater.on('download-progress', (progressObj) => {
-    let log_message = "Download speed: " + progressObj.bytesPerSecond;
-    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
-    log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
-    sendStatusToWindow('Downloaded' + progressObj.percent + "%");
-})
+    //下载中
+    sendStatusToWindow('Downloaded' + progressObj.percent);
+});
+
 autoUpdater.on('update-downloaded', (info) => {
+    //下载结束
     sendStatusToWindow('Update downloaded');
-    autoUpdater.quitAndInstall();
+    dialog.showMessageBox({
+        title: '安装更新',
+        message: '新版本下载完毕, 程序将退出更新...'
+    }, () => {
+        setImmediate(() => autoUpdater.quitAndInstall())
+    })
 });
 
 
@@ -181,10 +201,4 @@ app.on('activate', function() {
     if (mainWindow === null) {
         createWindow();
     }
-});
-
-
-//加载完后就检查更新
-app.on('ready', function()  {
-  autoUpdater.checkForUpdatesAndNotify();
 });
